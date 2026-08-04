@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AI 群聊 · 自由发言</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #0d0d1a; color: #e8e8f0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .phone { width: 100%; max-width: 430px; height: 100vh; max-height: 932px; background: #0d0d1a; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8); }
+        @media (min-width:431px) { .phone { border-radius: 32px; border: 1px solid rgba(255,255,255,0.06); } }
+        @media (max-width:430px) { .phone { max-height: 100vh; border-radius: 0; box-shadow: none; } }
+        /* ===== 顶部导航 ===== */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px 8px; background: rgba(13,13,26,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; z-index: 10; min-height: 52px; }
+        .header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .menu-btn { background: rgba(255,255,255,0.06); border: none; color: #a0a0c0; width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .menu-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .menu-btn:active { transform: scale(0.92); }
+        .header .logo { font-size: 17px; font-weight: 700; background: linear-gradient(135deg,#4f8cff,#7c5cfc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .header .logo .logo-icon svg { width: 22px; height: 22px; }
+        .header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .header-actions { display: flex; align-items: center; gap: 4px; }
+        .header-actions button { background: rgba(255,255,255,0.06); border: none; color: #a0a0c0; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .header-actions button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .header-actions button:active { transform: scale(0.92); }
+        .header-actions .new-chat-btn { background: rgba(79,140,255,0.15); color: #4f8cff; font-weight: 600; width: auto; padding: 0 14px; border-radius: 20px; font-size: 14px; gap: 4px; }
+        .header-actions .new-chat-btn:hover { background: rgba(79,140,255,0.25); color: #fff; }
+
+        /* ===== 侧边栏 ===== */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+        .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; max-width: 80vw; background: #12121f; z-index: 100; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); box-shadow: 4px 0 40px rgba(0,0,0,0.6); }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header .brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: #e8e8f0; }
+        .sidebar-header .brand svg { width: 26px; height: 26px; }
+        .sidebar-close { background: rgba(255,255,255,0.06); border: none; color: #8888aa; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .sidebar-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 12px 16px; }
+        .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+        .sidebar-section-title { font-size: 12px; font-weight: 600; color: #666688; padding: 16px 4px 8px; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-section-title button { background: transparent; border: none; color: #4f8cff; font-size: 12px; cursor: pointer; padding: 2px 8px; border-radius: 10px; }
+        .sidebar-section-title button:hover { background: rgba(79,140,255,0.1); }
+        .sidebar-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 4px 0; }
+        /* AI角色 */
+        .agent-item { padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; margin-bottom: 2px; border: 1px solid transparent; }
+        .agent-item:hover { background: rgba(255,255,255,0.05); }
+        .agent-item .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(79,140,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+        .agent-item .info { flex: 1; min-width: 0; }
+        .agent-item .info .name { font-size: 14px; font-weight: 500; color: #e8e8f0; display: flex; align-items: center; gap: 6px; }
+        .agent-item .info .name .status { font-size: 10px; padding: 1px 8px; border-radius: 10px; background: rgba(255,255,255,0.06); color: #8888aa; }
+        .agent-item .info .name .status.on { background: rgba(45,200,120,0.15); color: #4ade80; }
+        .agent-item .info .name .status.off { background: rgba(255,60,60,0.12); color: #ff6b6b; }
+        .agent-item .info .detail { font-size: 12px; color: #666688; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .agent-item .actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+        .agent-item:hover .actions { opacity: 1; }
+        .agent-item .actions button { background: transparent; border: none; color: #666688; font-size: 14px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: all 0.15s; }
+        .agent-item .actions button:hover { background: rgba(255,255,255,0.08); color: #e8e8f0; }
+        .agent-item .actions .toggle-btn:hover { color: #4ade80; }
+        .agent-item .actions .delete-btn:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
+        .agent-empty { text-align: center; color: #555577; font-size: 14px; padding: 20px 0; line-height: 1.8; }
+        .agent-empty .empty-icon { font-size: 28px; display: block; margin-bottom: 4px; opacity: 0.5; }
+        /* 对话历史 */
+        .conv-item { padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; border: 1px solid transparent; }
+        .conv-item:hover { background: rgba(255,255,255,0.05); }
+        .conv-item.active { background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.2); }
+        .conv-item .conv-info { flex: 1; min-width: 0; }
+        .conv-item .conv-title { font-size: 14px; font-weight: 500; color: #e0e0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-item .conv-meta { font-size: 11px; color: #666688; margin-top: 2px; }
+        .conv-item .conv-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+        .conv-item:hover .conv-actions { opacity: 1; }
+        .conv-item .conv-actions button { background: transparent; border: none; color: #666688; font-size: 14px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: all 0.15s; }
+        .conv-item .conv-actions .rename-btn:hover { color: #4f8cff; }
+        .conv-item .conv-actions .delete-btn:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
+        .conv-empty { text-align: center; color: #555577; font-size: 13px; padding: 16px 0; line-height: 1.6; }
+
+        /* ===== 消息区域 ===== */
+        .messages { flex: 1; overflow-y: auto; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        .messages::-webkit-scrollbar { width: 3px; }
+        .messages::-webkit-scrollbar-track { background: transparent; }
+        .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .welcome { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px 24px 40px; color: #666688; animation: fadeUp 0.5s ease-out; }
+        .welcome .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,rgba(79,140,255,0.15),rgba(124,92,252,0.15)); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.06); }
+        .welcome .icon-wrap svg { width: 44px; height: 44px; }
+        .welcome h2 { font-size: 20px; font-weight: 600; color: #e0e0f0; margin-bottom: 6px; }
+        .welcome p { font-size: 14px; line-height: 1.6; color: #8888aa; max-width: 280px; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        .message { display: flex; flex-direction: column; max-width: 92%; animation: fadeUp 0.25s ease-out; gap: 2px; }
+        .message.user { align-self: flex-end; align-items: flex-end; }
+        .message.agent { align-self: flex-start; align-items: flex-start; }
+        .message.divider { align-self: center; max-width: 100%; margin: 6px 0 2px; }
+        .msg-header { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8888aa; padding: 0 4px 2px 4px; }
+        .msg-header .avatar { width: 22px; height: 22px; border-radius: 50%; background: rgba(79,140,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid rgba(255,255,255,0.04); flex-shrink: 0; }
+        .msg-header .name { font-weight: 500; color: #c0c0e0; }
+        .msg-header .time { font-size: 10px; color: #555577; margin-left: 2px; }
+        .bubble { padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; word-break: break-word; position: relative; }
+        .message.user .bubble { background: #2d7dff; color: #fff; border-bottom-right-radius: 4px; }
+        .message.agent .bubble { background: #1a1a2e; color: #e8e8f0; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+        .message.divider .bubble { background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.08); border-radius: 20px; color: #8888aa; font-size: 13px; padding: 4px 16px; text-align: center; }
+        .cursor-blink { display: inline-block; width: 2px; height: 1em; background: #a0a0d0; margin-left: 2px; vertical-align: text-bottom; animation: blink 0.9s step-end infinite; }
+        @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0; } }
+        .bubble pre { background: rgba(0,0,0,0.4); padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 4px 0; font-size: 13px; font-family: "JetBrains Mono","Fira Code",monospace; border: 1px solid rgba(255,255,255,0.06); }
+        .bubble code { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; font-size: 14px; font-family: "JetBrains Mono","Fira Code",monospace; }
+        .bubble pre code { background: transparent; padding: 0; font-size: 13px; }
+        .bubble p { margin-bottom: 4px; }
+        .bubble p:last-child { margin-bottom: 0; }
+        .error-bubble { background: rgba(255,60,60,0.15) !important; border-color: rgba(255,60,60,0.25) !important; color: #ff7a7a !important; }
+        .interrupted-bubble { background: rgba(255,200,0,0.1) !important; border-color: rgba(255,200,0,0.2) !important; color: #ffd966 !important; }
+        .silent-bubble { background: rgba(100,100,140,0.08) !important; border-color: rgba(255,255,255,0.05) !important; color: #8888aa !important; font-style: italic; }
+
+        /* ===== 底部输入 ===== */
+        .input-area { background: rgba(13,13,26,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; display: flex; flex-direction: column; padding: 6px 12px 12px; }
+        .input-toolbar { display: flex; align-items: center; gap: 6px; padding: 2px 2px 6px 2px; flex-wrap: wrap; }
+        .input-toolbar .spacer { flex: 1; }
+        .at-selector { position: relative; display: inline-block; }
+        .at-selector .at-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #c0c0e0; padding: 2px 12px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
+        .at-selector .at-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .at-selector .at-btn .arrow { font-size: 11px; transition: transform 0.25s; }
+        .at-selector .at-btn .arrow.open { transform: rotate(180deg); }
+        .at-selector .at-dropdown { position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 180px; background: #1a1a2e; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 -8px 40px rgba(0,0,0,0.6); padding: 4px 0; max-height: 200px; overflow-y: auto; z-index: 20; display: none; backdrop-filter: blur(10px); }
+        .at-selector .at-dropdown.open { display: block; }
+        .at-selector .at-dropdown-item { padding: 8px 14px; font-size: 14px; color: #d0d0e8; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); user-select: none; }
+        .at-selector .at-dropdown-item:last-child { border-bottom: none; }
+        .at-selector .at-dropdown-item:hover { background: rgba(255,255,255,0.06); }
+        .at-selector .at-dropdown-item .check { margin-left: auto; opacity: 0; font-size: 14px; transition: opacity 0.15s; }
+        .at-selector .at-dropdown-item .check.checked { opacity: 1; color: #4f8cff; }
+        .at-selector .at-dropdown-item .at-avatar { font-size: 16px; }
+
+        /* 群聊模式按钮 */
+        .input-toolbar .group-btn { background: rgba(79,140,255,0.1); border: 1px solid rgba(79,140,255,0.15); color: #8ab4ff; padding: 2px 14px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
+        .input-toolbar .group-btn:hover { background: rgba(79,140,255,0.2); color: #fff; }
+        .input-toolbar .group-btn.active { background: rgba(124,92,252,0.2); border-color: rgba(124,92,252,0.3); color: #c8b0ff; }
+
+        .input-toolbar .debate-btn { background: rgba(124,92,252,0.15); border: 1px solid rgba(124,92,252,0.2); color: #b8a0ff; padding: 2px 14px 2px 12px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
+        .input-toolbar .debate-btn:hover { background: rgba(124,92,252,0.25); color: #fff; }
+        .input-toolbar .debate-btn:active { transform: scale(0.95); }
+        .input-toolbar .debate-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .input-toolbar .file-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #a0a0c0; width: 30px; height: 30px; border-radius: 50%; font-size: 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .input-toolbar .file-btn:hover { background: rgba(255,255,255,0.12); color: #e8e8f0; }
+        .input-toolbar .file-btn:active { transform: scale(0.92); }
+        #fileInput { display: none; }
+
+        .input-area .input-wrap { flex: 1; background: #1a1a2e; border-radius: 22px; padding: 2px 10px 2px 14px; border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.25s; display: flex; align-items: flex-end; gap: 4px; margin-top: 2px; }
+        .input-area .input-wrap:focus-within { border-color: rgba(45,125,255,0.5); }
+        .input-area textarea { flex: 1; background: transparent; border: none; outline: none; color: #e8e8f0; font-size: 15px; font-family: inherit; resize: none; padding: 8px 0; min-height: 22px; max-height: 100px; line-height: 1.5; }
+        .input-area textarea::placeholder { color: #666688; }
+        .input-area .send-btn { background: #2d7dff; border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .input-area .send-btn:hover { background: #3d8dff; transform: scale(1.02); }
+        .input-area .send-btn:active { transform: scale(0.92); }
+        .input-area .send-btn:disabled { background: #3a3a5a; color: #666688; cursor: not-allowed; transform: none; }
+        .input-area .send-btn.stop-btn { background: #ff4d4d; }
+        .input-area .send-btn.stop-btn:hover { background: #ff6666; }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 16px; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal { background: #16162a; border-radius: 24px; padding: 20px 18px 18px; max-width: 420px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 24px 80px rgba(0,0,0,0.6); transform: scale(0.95) translateY(10px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+        .modal h2 { font-size: 19px; font-weight: 600; margin-bottom: 2px; color: #e8e8f0; display: flex; align-items: center; gap: 8px; }
+        .modal .desc { font-size: 13px; color: #8888aa; margin-bottom: 14px; }
+        .config-list { flex: 1; overflow-y: auto; margin-bottom: 14px; max-height: 220px; }
+        .config-list::-webkit-scrollbar { width: 3px; }
+        .config-list::-webkit-scrollbar-track { background: transparent; }
+        .config-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+        .config-card { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.04); transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 6px; cursor: pointer; }
+        .config-card:hover { background: rgba(255,255,255,0.07); }
+        .config-card.active { border-color: rgba(79,140,255,0.3); background: rgba(79,140,255,0.08); }
+        .config-card .info { flex: 1; min-width: 0; }
+        .config-card .info .name { font-size: 14px; font-weight: 500; color: #e8e8f0; }
+        .config-card .info .detail { font-size: 11px; color: #666688; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .config-card .actions { display: flex; gap: 2px; flex-shrink: 0; }
+        .config-card .actions button { background: rgba(255,255,255,0.06); border: none; color: #8888aa; width: 28px; height: 28px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+        .config-card .actions button:hover { background: rgba(255,255,255,0.12); color: #e8e8f0; }
+        .config-card .actions button.danger:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
+        .config-form { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.04); display: none; }
+        .config-form.open { display: block; }
+        .config-form .field { margin-bottom: 10px; }
+        .config-form .field label { display: block; font-size: 12px; font-weight: 500; color: #a0a0c0; margin-bottom: 3px; }
+        .config-form .field input { width: 100%; padding: 7px 10px; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #e8e8f0; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.25s; }
+        .config-form .field input:focus { border-color: rgba(45,125,255,0.5); }
+        .config-form .field input::placeholder { color: #555577; }
+        .config-form .field input[type="number"] { -moz-appearance: textfield; }
+        .config-form .field input[type="number"]::-webkit-inner-spin-button,
+        .config-form .field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .config-form .form-actions { display: flex; gap: 8px; margin-top: 6px; }
+        .config-form .form-actions button { flex: 1; padding: 8px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .config-form .form-actions .btn-save { background: #2d7dff; color: #fff; }
+        .config-form .form-actions .btn-save:hover { background: #3d8dff; }
+        .config-form .form-actions .btn-cancel { background: rgba(255,255,255,0.06); color: #a0a0c0; }
+        .config-form .form-actions .btn-cancel:hover { background: rgba(255,255,255,0.12); }
+        .config-form .form-actions .btn-delete { background: rgba(255,60,60,0.12); color: #ff6b6b; }
+        .config-form .form-actions .btn-delete:hover { background: rgba(255,60,60,0.2); }
+        .modal .modal-actions { display: flex; gap: 8px; margin-top: 6px; flex-shrink: 0; }
+        .modal .modal-actions button { flex: 1; padding: 10px 0; border-radius: 10px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .modal .modal-actions .btn-add { background: rgba(79,140,255,0.15); color: #4f8cff; }
+        .modal .modal-actions .btn-add:hover { background: rgba(79,140,255,0.25); }
+        .modal .modal-actions .btn-close { background: rgba(255,255,255,0.06); color: #a0a0c0; }
+        .modal .modal-actions .btn-close:hover { background: rgba(255,255,255,0.12); }
+
+        /* AI角色编辑 */
+        .agent-form .field { margin-bottom: 10px; }
+        .agent-form .field label { display: block; font-size: 12px; font-weight: 500; color: #a0a0c0; margin-bottom: 3px; }
+        .agent-form .field input,
+        .agent-form .field select,
+        .agent-form .field textarea { width: 100%; padding: 7px 10px; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #e8e8f0; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.25s; }
+        .agent-form .field input:focus,
+        .agent-form .field select:focus,
+        .agent-form .field textarea:focus { border-color: rgba(45,125,255,0.5); }
+        .agent-form .field textarea { resize: vertical; min-height: 50px; max-height: 120px; }
+        .agent-form .field select option { background: #1a1a2e; color: #e8e8f0; }
+        .agent-form .field .row { display: flex; gap: 10px; align-items: center; }
+        .agent-form .field .row .emoji-input { font-size: 24px; width: 48px; text-align: center; flex-shrink: 0; }
+        .agent-form .field .row .name-input { flex: 1; }
+        .agent-form .field .toggle-row { display: flex; align-items: center; gap: 10px; }
+        .agent-form .field .toggle-row label { margin-bottom: 0; cursor: pointer; }
+        .agent-form .field .toggle-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #4f8cff; cursor: pointer; }
+        .agent-form .form-actions { display: flex; gap: 8px; margin-top: 6px; }
+        .agent-form .form-actions button { flex: 1; padding: 8px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .agent-form .form-actions .btn-save { background: #2d7dff; color: #fff; }
+        .agent-form .form-actions .btn-save:hover { background: #3d8dff; }
+        .agent-form .form-actions .btn-cancel { background: rgba(255,255,255,0.06); color: #a0a0c0; }
+        .agent-form .form-actions .btn-cancel:hover { background: rgba(255,255,255,0.12); }
+        .agent-form .form-actions .btn-delete { background: rgba(255,60,60,0.12); color: #ff6b6b; }
+        .agent-form .form-actions .btn-delete:hover { background: rgba(255,60,60,0.2); }
+
+        .toast-tip { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(22,22,42,0.95); color: #e8e8f0; padding: 10px 20px; border-radius: 12px; font-size: 13px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.06); z-index: 9999; box-shadow: 0 8px 40px rgba(0,0,0,0.5); max-width: 90%; text-align: center; animation: fadeUp 0.25s ease-out; }
+
+        @media (max-width:430px) {
+            .sidebar { max-width: 85vw; }
+            .header .logo { font-size: 15px; }
+            .header .logo .logo-icon svg { width: 20px; height: 20px; }
+            .at-selector .at-btn, .input-toolbar .group-btn, .input-toolbar .debate-btn { font-size: 12px; padding: 1px 10px; height: 28px; }
+            .input-area textarea { font-size: 14px; }
+            .bubble { font-size: 14px; padding: 8px 12px; }
+            .msg-header { font-size: 11px; }
+            .msg-header .avatar { width: 20px; height: 20px; font-size: 11px; }
+            .modal { padding: 16px 14px 14px; }
+            .welcome .icon-wrap { width: 64px; height: 64px; }
+            .welcome .icon-wrap svg { width: 36px; height: 36px; }
+            .welcome h2 { font-size: 18px; }
+            .header-actions .new-chat-btn { font-size: 12px; padding: 0 10px; height: 30px; }
+        }
+        @media (min-width:431px) { .at-selector .at-dropdown { min-width: 200px; } }
+    </style>
+</head>
+<body>
+
+<div class="phone" id="app">
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
+            <span class="logo"><span class="logo-icon"><svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#logoGrad)"/><path d="M9 20.5C9 16.5 12 14 16 14C20 14 23 16.5 23 20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="11" r="1.8" fill="white"/><circle cx="19" cy="11" r="1.8" fill="white"/><path d="M16 9V7M16 9V11M16 9H14M16 9H18" stroke="white" stroke-width="1.6" stroke-linecap="round"/><defs><linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#4F8CFF"/><stop offset="100%" stop-color="#7C5CFC"/></linearGradient></defs></svg></span>AI 群聊</span>
+        </div>
+        <div class="header-right">
+            <div class="header-actions">
+                <button class="new-chat-btn" id="newChatBtn">＋ 新建</button>
+                <button id="settingsBtn" title="API配置">⚙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 消息列表 -->
+    <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+            <div class="icon-wrap"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="url(#welcomeGrad)"/><path d="M18 42C18 32 24 28 32 28C40 28 46 32 46 42" stroke="white" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="22" r="3.5" fill="white"/><circle cx="38" cy="22" r="3.5" fill="white"/><path d="M32 17V13M32 17V21M32 17H28M32 17H36" stroke="white" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="welcomeGrad" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#4F8CFF"/><stop offset="100%" stop-color="#7C5CFC"/></linearGradient></defs></svg></div>
+            <h2>🤖 群聊 · 自由参与</h2>
+            <p>点击「👥 群聊」进入自由发言模式，AI可自主选择是否回复</p>
+        </div>
+    </div>
+
+    <!-- 底部输入 -->
+    <div class="input-area" id="inputArea">
+        <div class="input-toolbar">
+            <div class="at-selector" id="atSelector">
+                <button class="at-btn" id="atBtn"><span id="atLabel">@ 全部</span><span class="arrow" id="atArrow">▾</span></button>
+                <div class="at-dropdown" id="atDropdown"></div>
+            </div>
+            <!-- 群聊模式按钮 -->
+            <button class="group-btn" id="groupBtn">👥 群聊</button>
+            <button class="debate-btn" id="debateBtn">💬 讨论</button>
+            <button class="file-btn" id="fileBtn" title="上传文件">📎</button>
+            <input type="file" id="fileInput" />
+            <div class="spacer"></div>
+        </div>
+        <div class="input-wrap">
+            <textarea id="inputBox" rows="1" placeholder="输入消息…" autofocus></textarea>
+            <button class="send-btn" id="sendBtn" aria-label="发送">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- 侧边栏 -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header"><span class="brand">📋 管理</span><button class="sidebar-close" id="sidebarClose">✕</button></div>
+    <div class="sidebar-scroll">
+        <div class="sidebar-section-title">🤖 AI 角色 <button id="addAgentBtn">＋ 添加</button></div>
+        <div id="agentList"></div>
+        <hr class="sidebar-divider" />
+        <div class="sidebar-section-title">💬 对话历史 <button id="newChatSidebarBtn">＋ 新建</button></div>
+        <div id="convList"></div>
+    </div>
+</div>
+
+<!-- 设置模态框 -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+        <h2>⚙️ API 配置</h2>
+        <p class="desc">每个AI角色绑定一个配置</p>
+        <div class="config-list" id="configList"></div>
+        <div class="config-form" id="configForm">
+            <div class="field"><label>名称</label><input id="cfgName" placeholder="例如：DeepSeek" /></div>
+            <div class="field"><label>API 地址</label><input id="cfgBase" placeholder="https://api.deepseek.com/v1" /></div>
+            <div class="field"><label>API Key</label><input id="cfgKey" type="password" placeholder="sk-..." /></div>
+            <div class="field"><label>模型名称</label><input id="cfgModel" placeholder="deepseek-chat" /></div>
+            <div class="field"><label>最大输出 Token</label><input id="cfgMaxTokens" type="number" placeholder="4096" min="1" step="1" /></div>
+            <div class="form-actions">
+                <button class="btn-cancel" id="formCancel">取消</button>
+                <button class="btn-save" id="formSave">保存</button>
+                <button class="btn-delete" id="formDelete" style="display:none;">删除</button>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-add" id="addConfigBtn">＋ 新增</button>
+            <button class="btn-close" id="modalClose">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- AI角色编辑模态框 -->
+<div class="modal-overlay" id="agentModal">
+    <div class="modal">
+        <h2 id="agentModalTitle">✏️ 编辑角色</h2>
+        <p class="desc">设置角色信息与绑定配置</p>
+        <div class="agent-form" id="agentForm">
+            <div class="field"><label>头像 (Emoji)</label><div class="row"><input class="emoji-input" id="agentAvatar" type="text" maxlength="2" placeholder="🤖" /><input class="name-input" id="agentName" type="text" placeholder="角色名称" /></div></div>
+            <div class="field"><label>绑定 API 配置</label><select id="agentConfigId"></select></div>
+            <div class="field"><label>系统提示词</label><textarea id="agentPrompt" placeholder="你是一个乐于助人的AI助手…"></textarea></div>
+            <div class="field"><div class="toggle-row"><input type="checkbox" id="agentEnabled" checked /><label for="agentEnabled">启用此角色</label></div></div>
+            <div class="form-actions">
+                <button class="btn-cancel" id="agentFormCancel">取消</button>
+                <button class="btn-save" id="agentFormSave">保存</button>
+                <button class="btn-delete" id="agentFormDelete" style="display:none;">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    //  完整版：自由群聊模式 + 切换对话中断流
+    // ================================================================
+
+    (function() {
+        'use strict';
+
+        // ---------- DOM ----------
+        const messagesEl = document.getElementById('messages');
+        const inputBox = document.getElementById('inputBox');
+        const sendBtn = document.getElementById('sendBtn');
+        const debateBtn = document.getElementById('debateBtn');
+        const groupBtn = document.getElementById('groupBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const welcomeEl = document.getElementById('welcome');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const newChatSidebarBtn = document.getElementById('newChatSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const menuBtn = document.getElementById('menuBtn');
+        const agentListEl = document.getElementById('agentList');
+        const convListEl = document.getElementById('convList');
+        const addAgentBtn = document.getElementById('addAgentBtn');
+        const atSelector = document.getElementById('atSelector');
+        const atBtn = document.getElementById('atBtn');
+        const atLabel = document.getElementById('atLabel');
+        const atArrow = document.getElementById('atArrow');
+        const atDropdown = document.getElementById('atDropdown');
+        const modal = document.getElementById('settingsModal');
+        const configListEl = document.getElementById('configList');
+        const configForm = document.getElementById('configForm');
+        const cfgName = document.getElementById('cfgName');
+        const cfgBase = document.getElementById('cfgBase');
+        const cfgKey = document.getElementById('cfgKey');
+        const cfgModel = document.getElementById('cfgModel');
+        const cfgMaxTokens = document.getElementById('cfgMaxTokens');
+        const formSave = document.getElementById('formSave');
+        const formCancel = document.getElementById('formCancel');
+        const formDelete = document.getElementById('formDelete');
+        const addConfigBtn = document.getElementById('addConfigBtn');
+        const modalClose = document.getElementById('modalClose');
+        const agentModal = document.getElementById('agentModal');
+        const agentModalTitle = document.getElementById('agentModalTitle');
+        const agentForm = document.getElementById('agentForm');
+        const agentAvatar = document.getElementById('agentAvatar');
+        const agentName = document.getElementById('agentName');
+        const agentConfigId = document.getElementById('agentConfigId');
+        const agentPrompt = document.getElementById('agentPrompt');
+        const agentEnabled = document.getElementById('agentEnabled');
+        const agentFormSave = document.getElementById('agentFormSave');
+        const agentFormCancel = document.getElementById('agentFormCancel');
+        const agentFormDelete = document.getElementById('agentFormDelete');
+        const fileBtn = document.getElementById('fileBtn');
+        const fileInput = document.getElementById('fileInput');
+
+        // ---------- 状态 ----------
+        let isStreaming = false;
+        let isDebating = false;
+        let groupChatMode = false; // 群聊模式开关
+        let editingAgentId = null;
+        let editingConfigId = null;
+        let atTargets = [];
+        let activeControllers = [];
+        let streamingMsgIds = new Set();
+
+        // ---------- 存储 ----------
+        const STORAGE = {
+            CONFIGS: 'ai_group_configs',
+            CURRENT_CONFIG_ID: 'ai_group_current_config_id',
+            AGENTS: 'ai_group_agents',
+            CONVERSATIONS: 'ai_group_conversations',
+            CURRENT_CONV_ID: 'ai_group_current_conv_id',
+        };
+
+        let configs = [];
+        let currentConfigId = null;
+        let agents = [];
+        let conversations = [];
+        let currentConvId = null;
+        let messages = [];
+
+        // ---------- 初始化 ----------
+        function loadConfigs() {
+            try {
+                const data = localStorage.getItem(STORAGE.CONFIGS);
+                if (data) { configs = JSON.parse(data); } else { configs = []; }
+            } catch (_) { configs = []; }
+            if (configs.length === 0) configs = [];
+            let needSave = false;
+            for (const c of configs) {
+                if (c.maxTokens === undefined) { c.maxTokens = 4096; needSave = true; }
+            }
+            if (needSave) saveConfigs();
+
+            try {
+                const id = localStorage.getItem(STORAGE.CURRENT_CONFIG_ID);
+                if (id && configs.some(c => c.id === id)) { currentConfigId = id; } else { currentConfigId = configs[0]?.id ||
+                        null; }
+            } catch (_) { currentConfigId = configs[0]?.id || null; }
+            if (!currentConfigId && configs.length > 0) currentConfigId = configs[0].id;
+        }
+
+        function saveConfigs() {
+            try {
+                localStorage.setItem(STORAGE.CONFIGS, JSON.stringify(configs));
+                if (currentConfigId) localStorage.setItem(STORAGE.CURRENT_CONFIG_ID, currentConfigId);
+            } catch (_) {}
+        }
+
+        function loadAgents() {
+            try {
+                const data = localStorage.getItem(STORAGE.AGENTS);
+                if (data) { agents = JSON.parse(data); } else { agents = []; }
+            } catch (_) { agents = []; }
+            if (agents.length === 0) {
+                agents.push({
+                    id: 'agent_default',
+                    name: '小智',
+                    avatar: '🤖',
+                    configId: configs[0]?.id || null,
+                    prompt: '你是一个乐于助人的AI助手。',
+                    enabled: true,
+                });
+                agents.push({
+                    id: 'agent_creative',
+                    name: '小创',
+                    avatar: '🎨',
+                    configId: configs[0]?.id || null,
+                    prompt: '你是一个富有创意、天马行空的AI。',
+                    enabled: true,
+                });
+                saveAgents();
+            }
+            let needSave = false;
+            for (const a of agents) {
+                if (!configs.some(c => c.id === a.configId)) {
+                    a.configId = configs[0]?.id || null;
+                    needSave = true;
+                }
+            }
+            if (needSave) saveAgents();
+        }
+
+        function saveAgents() {
+            try { localStorage.setItem(STORAGE.AGENTS, JSON.stringify(agents)); } catch (_) {}
+        }
+
+        function loadConversations() {
+            try {
+                const data = localStorage.getItem(STORAGE.CONVERSATIONS);
+                if (data) { conversations = JSON.parse(data); } else { conversations = []; }
+            } catch (_) { conversations = []; }
+            if (conversations.length === 0) {
+                const conv = { id: 'conv_default', title: '新对话', messages: [], createdAt: Date.now(), updatedAt: Date
+                    .now() };
+                conversations.push(conv);
+                saveConversations();
+            }
+            try {
+                const id = localStorage.getItem(STORAGE.CURRENT_CONV_ID);
+                if (id && conversations.some(c => c.id === id)) { currentConvId = id; } else { currentConvId = conversations[
+                        0]?.id || null; }
+            } catch (_) { currentConvId = conversations[0]?.id || null; }
+            if (!currentConvId && conversations.length > 0) currentConvId = conversations[0].id;
+            loadCurrentConvMessages();
+        }
+
+        function saveConversations() {
+            try {
+                localStorage.setItem(STORAGE.CONVERSATIONS, JSON.stringify(conversations));
+                if (currentConvId) localStorage.setItem(STORAGE.CURRENT_CONV_ID, currentConvId);
+            } catch (_) {}
+        }
+
+        function loadCurrentConvMessages() {
+            const conv = conversations.find(c => c.id === currentConvId);
+            if (conv) messages = conv.messages || [];
+            else messages = [];
+            renderMessages();
+        }
+
+        function getCurrentConv() {
+            return conversations.find(c => c.id === currentConvId) || null;
+        }
+
+        function saveCurrentConversation() {
+            const conv = getCurrentConv();
+            if (!conv) return;
+            conv.messages = messages.slice();
+            conv.updatedAt = Date.now();
+            const firstUser = messages.find(m => m.role === 'user');
+            if (firstUser) {
+                const title = firstUser.content.slice(0, 20) + (firstUser.content.length > 20 ? '…' : '');
+                conv.title = title || '新对话';
+            } else {
+                conv.title = '空对话';
+            }
+            saveConversations();
+        }
+
+        function createNewConversation() {
+            const conv = {
+                id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                title: '新对话',
+                messages: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+            };
+            conversations.unshift(conv);
+            currentConvId = conv.id;
+            messages = [];
+            saveConversations();
+            renderConversationList();
+            renderMessages();
+            closeSidebar();
+            showToast('✨ 新对话已创建');
+            return conv;
+        }
+
+        // ===== 修复：切换对话时中断所有流 =====
+        function loadConversation(id) {
+            // 不再检查 isStreaming，而是强制中断
+            if (isStreaming || isDebating) {
+                stopAllStreams();
+                // 等待中断完成（异步）
+            }
+            saveCurrentConversation();
+            const conv = conversations.find(c => c.id === id);
+            if (!conv) return;
+            currentConvId = id;
+            messages = conv.messages || [];
+            saveConversations();
+            renderConversationList();
+            renderMessages();
+            closeSidebar();
+            showToast(`已加载: ${conv.title}`);
+        }
+
+        function deleteConversation(id) {
+            if (conversations.length <= 1) { showToast('至少保留一个对话'); return; }
+            if (isStreaming || isDebating) {
+                stopAllStreams();
+            }
+            if (!confirm('确定删除此对话吗？')) return;
+            const idx = conversations.findIndex(c => c.id === id);
+            if (idx === -1) return;
+            conversations.splice(idx, 1);
+            if (currentConvId === id) {
+                currentConvId = conversations[0]?.id || null;
+                if (currentConvId) {
+                    const conv = conversations.find(c => c.id === currentConvId);
+                    messages = conv ? conv.messages || [] : [];
+                } else {
+                    messages = [];
+                    if (conversations.length === 0) {
+                        const newConv = { id: 'conv_' + Date.now(), title: '新对话', messages: [], createdAt: Date.now(),
+                            updatedAt: Date.now() };
+                        conversations.push(newConv);
+                        currentConvId = newConv.id;
+                        messages = [];
+                    }
+                }
+            }
+            saveConversations();
+            renderConversationList();
+            renderMessages();
+            showToast('已删除对话');
+        }
+
+        function renameConversation(id) {
+            const conv = conversations.find(c => c.id === id);
+            if (!conv) return;
+            const newTitle = prompt('输入新的对话标题：', conv.title);
+            if (newTitle !== null && newTitle.trim() !== '') {
+                conv.title = newTitle.trim();
+                conv.updatedAt = Date.now();
+                saveConversations();
+                renderConversationList();
+                showToast('✅ 已重命名');
+            }
+        }
+
+        // ---------- 渲染 ----------
+        function renderMessages() {
+            const children = messagesEl.querySelectorAll('.message');
+            children.forEach(el => el.remove());
+            if (welcomeEl) welcomeEl.style.display = 'none';
+            if (!messages || messages.length === 0) { welcomeEl.style.display = 'flex'; return; }
+            for (const msg of messages) {
+                addMessageElement(msg, false);
+            }
+            scrollToBottomIfNeeded();
+        }
+
+        function addMessageElement(msg, isStreamingMsg = false) {
+            if (welcomeEl) welcomeEl.style.display = 'none';
+            const div = document.createElement('div');
+            let roleClass = msg.role === 'user' ? 'user' : 'agent';
+            if (msg.role === 'divider') roleClass = 'divider';
+            div.className = `message ${roleClass}`;
+            div.dataset.id = msg.id || genId();
+
+            if (msg.role !== 'divider') {
+                const header = document.createElement('div');
+                header.className = 'msg-header';
+                if (msg.role === 'user') {
+                    header.innerHTML = `<span class="avatar">👤</span><span class="name">你</span>`;
+                } else {
+                    const agent = agents.find(a => a.id === msg.agentId);
+                    const avatar = agent?.avatar || '🤖';
+                    const name = agent?.name || 'AI';
+                    header.innerHTML = `<span class="avatar">${avatar}</span><span class="name">${escapeHtml(name)}</span>`;
+                }
+                div.appendChild(header);
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (msg.error) bubble.classList.add('error-bubble');
+            if (msg.interrupted) bubble.classList.add('interrupted-bubble');
+            // 沉默标记（群聊模式下未发言）
+            if (msg.silent) bubble.classList.add('silent-bubble');
+
+            if (msg.role === 'divider') {
+                bubble.textContent = msg.content || '─── 阶段 ───';
+            } else {
+                bubble.innerHTML = formatContent(msg.content || '');
+            }
+            div.appendChild(bubble);
+
+            if (isStreamingMsg && msg.role !== 'divider') {
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor-blink';
+                bubble.appendChild(cursor);
+            }
+
+            messagesEl.appendChild(div);
+            return { element: div, bubble };
+        }
+
+        function updateStreamingMessage(msgId, content) {
+            const items = messagesEl.querySelectorAll('.message');
+            for (const el of items) {
+                if (el.dataset.id === msgId) {
+                    const bubble = el.querySelector('.bubble');
+                    if (bubble) {
+                        const oldCursor = bubble.querySelector('.cursor-blink');
+                        if (oldCursor) oldCursor.remove();
+                        bubble.innerHTML = formatContent(content);
+                        const cursor = document.createElement('span');
+                        cursor.className = 'cursor-blink';
+                        bubble.appendChild(cursor);
+                        scrollToBottomIfNeeded();
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function finishStreamingMessage(msgId, content, error = false, interrupted = false) {
+            const items = messagesEl.querySelectorAll('.message');
+            for (const el of items) {
+                if (el.dataset.id === msgId) {
+                    const bubble = el.querySelector('.bubble');
+                    if (bubble) {
+                        const cursor = bubble.querySelector('.cursor-blink');
+                        if (cursor) cursor.remove();
+                        if (error) bubble.classList.add('error-bubble');
+                        if (interrupted) bubble.classList.add('interrupted-bubble');
+                        bubble.innerHTML = formatContent(content);
+                        scrollToBottomIfNeeded();
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function addDivider(text) {
+            const msg = { id: genId(), role: 'divider', content: text, timestamp: Date.now() };
+            messages.push(msg);
+            addMessageElement(msg, false);
+            saveCurrentConversation();
+            scrollToBottomIfNeeded();
+        }
+
+        function formatContent(text) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+            html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${escapeHtml(code.trim())}</code></pre>`);
+            html = html.replace(/`([^`]+)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        let autoScroll = true;
+
+        function scrollToBottomIfNeeded() {
+            if (autoScroll) {
+                requestAnimationFrame(() => {
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                });
+            }
+        }
+
+        messagesEl.addEventListener('scroll', () => {
+            const threshold = 50;
+            const atBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < threshold;
+            autoScroll = atBottom;
+        });
+
+        // ---------- 渲染侧边栏 ----------
+        function renderAgentList() {
+            if (agents.length === 0) {
+                agentListEl.innerHTML =
+                    `<div class="agent-empty"><span class="empty-icon">🤖</span>暂无角色<br/>点击「添加」创建</div>`;
+                return;
+            }
+            let html = '';
+            for (const agent of agents) {
+                const statusClass = agent.enabled ? 'on' : 'off';
+                const statusText = agent.enabled ? '● 启用' : '○ 禁用';
+                const configName = configs.find(c => c.id === agent.configId)?.name || '未绑定';
+                html += `
+                    <div class="agent-item" data-id="${agent.id}">
+                        <div class="avatar">${agent.avatar || '🤖'}</div>
+                        <div class="info">
+                            <div class="name">
+                                ${escapeHtml(agent.name || '未命名')}
+                                <span class="status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="detail">${escapeHtml(configName)} · ${escapeHtml(agent.prompt || '无提示词')}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="toggle-btn" data-id="${agent.id}" title="${agent.enabled ? '禁用' : '启用'}">${agent.enabled ? '⏸' : '▶'}</button>
+                            <button class="edit-btn" data-id="${agent.id}" title="编辑">✎</button>
+                            <button class="delete-btn" data-id="${agent.id}" title="删除">✕</button>
+                        </div>
+                    </div>
+                `;
+            }
+            agentListEl.innerHTML = html;
+            agentListEl.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    toggleAgent(btn.dataset.id); });
+            });
+            agentListEl.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    openAgentEditor(btn.dataset.id); });
+            });
+            agentListEl.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (agents.length <= 1) { showToast('至少保留一个角色'); return; }
+                    if (confirm(`确定删除角色 "${agents.find(a=>a.id===id)?.name}" 吗？`)) deleteAgent(id);
+                });
+            });
+            agentListEl.querySelectorAll('.agent-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.actions')) return;
+                    openAgentEditor(item.dataset.id);
+                });
+            });
+        }
+
+        function renderConversationList() {
+            if (conversations.length === 0) {
+                convListEl.innerHTML = `<div class="conv-empty">暂无对话</div>`;
+                return;
+            }
+            let html = '';
+            for (const conv of conversations) {
+                const active = conv.id === currentConvId ? 'active' : '';
+                const title = conv.title || '新对话';
+                const count = conv.messages ? conv.messages.length : 0;
+                const time = new Date(conv.updatedAt || conv.createdAt);
+                const timeStr = time.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) +
+                    ' ' + time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                html += `
+                    <div class="conv-item ${active}" data-id="${conv.id}">
+                        <div class="conv-info">
+                            <div class="conv-title">${escapeHtml(title)}</div>
+                            <div class="conv-meta">${timeStr} · ${count} 条</div>
+                        </div>
+                        <div class="conv-actions">
+                            <button class="rename-btn" data-id="${conv.id}" title="重命名">✎</button>
+                            <button class="delete-btn" data-id="${conv.id}" title="删除">✕</button>
+                        </div>
+                    </div>
+                `;
+            }
+            convListEl.innerHTML = html;
+            convListEl.querySelectorAll('.conv-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.conv-actions')) return;
+                    const id = item.dataset.id;
+                    if (id !== currentConvId) loadConversation(id);
+                });
+                const renameBtn = item.querySelector('.rename-btn');
+                if (renameBtn) {
+                    renameBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        renameConversation(item.dataset.id);
+                    });
+                }
+                const delBtn = item.querySelector('.delete-btn');
+                if (delBtn) {
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteConversation(item.dataset.id);
+                    });
+                }
+            });
+        }
+
+        // ===== 多选 @ 下拉菜单 =====
+        function renderAtDropdown() {
+            const enabled = getEnabledAgents();
+            let html = '';
+            html += `
+                <div class="at-dropdown-item" data-id="__all">
+                    <span>🌐 全部</span>
+                    <span class="check ${atTargets.length === 0 ? 'checked' : ''}">✓</span>
+                </div>
+            `;
+            for (const agent of enabled) {
+                const checked = atTargets.includes(agent.id);
+                html += `
+                    <div class="at-dropdown-item" data-id="${agent.id}">
+                        <span class="at-avatar">${agent.avatar || '🤖'}</span>
+                        <span>${escapeHtml(agent.name)}</span>
+                        <span class="check ${checked ? 'checked' : ''}">✓</span>
+                    </div>
+                `;
+            }
+            atDropdown.innerHTML = html;
+
+            if (atTargets.length === 0) {
+                atLabel.textContent = '@ 全部';
+            } else {
+                const names = atTargets.map(id => {
+                    const a = agents.find(ag => ag.id === id);
+                    return a ? a.name : '?';
+                });
+                if (names.length <= 2) {
+                    atLabel.textContent = '@ ' + names.join(', ');
+                } else {
+                    atLabel.textContent = '@ ' + names.slice(0, 2).join(', ') + ` +${names.length - 2}`;
+                }
+            }
+
+            atDropdown.querySelectorAll('.at-dropdown-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = item.dataset.id;
+                    if (id === '__all') {
+                        atTargets = [];
+                    } else {
+                        const idx = atTargets.indexOf(id);
+                        if (idx !== -1) {
+                            atTargets.splice(idx, 1);
+                        } else {
+                            atTargets.push(id);
+                        }
+                    }
+                    renderAtDropdown();
+                });
+            });
+        }
+
+        function toggleAtDropdown() {
+            const isOpen = atDropdown.classList.toggle('open');
+            atArrow.classList.toggle('open', isOpen);
+            if (isOpen) renderAtDropdown();
+        }
+
+        function closeAtDropdown() {
+            atDropdown.classList.remove('open');
+            atArrow.classList.remove('open');
+        }
+
+        // 获取选中的目标AI列表（用于快速回复和辩论）
+        function getTargetAgents() {
+            if (atTargets.length === 0) {
+                return getEnabledAgents();
+            } else {
+                return agents.filter(a => atTargets.includes(a.id) && a.enabled);
+            }
+        }
+
+        // ---------- 配置列表 ----------
+        function renderConfigList() {
+            if (configs.length === 0) {
+                configListEl.innerHTML = `<div style="text-align:center;color:#555577;padding:16px 0;">暂无配置，请添加</div>`;
+                return;
+            }
+            let html = '';
+            for (const c of configs) {
+                const active = c.id === currentConfigId ? 'active' : '';
+                const maxTok = c.maxTokens || 4096;
+                html += `
+                    <div class="config-card ${active}" data-id="${c.id}">
+                        <div class="info">
+                            <div class="name">${escapeHtml(c.name)}</div>
+                            <div class="detail">${escapeHtml(c.apiBase)} · ${escapeHtml(c.model)} · max_tokens: ${maxTok}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="edit-btn" data-id="${c.id}" title="编辑">✎</button>
+                            <button class="delete-btn" data-id="${c.id}" title="删除" style="${configs.length <= 1 ? 'opacity:0.3;pointer-events:none;' : ''}">✕</button>
+                        </div>
+                    </div>
+                `;
+            }
+            configListEl.innerHTML = html;
+            configListEl.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    editConfig(btn.dataset.id); });
+            });
+            configListEl.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (configs.length <= 1) { showToast('至少保留一个配置'); return; }
+                    if (confirm(`删除配置 "${configs.find(c=>c.id===id)?.name}" 吗？`)) deleteConfig(id);
+                });
+            });
+            configListEl.querySelectorAll('.config-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = card.dataset.id;
+                    if (id !== currentConfigId) {
+                        currentConfigId = id;
+                        saveConfigs();
+                        renderConfigList();
+                        showToast(`已切换到 ${configs.find(c=>c.id===id)?.name}`);
+                    }
+                });
+            });
+        }
+
+        function editConfig(id) {
+            const cfg = configs.find(c => c.id === id);
+            if (!cfg) return;
+            editingConfigId = id;
+            cfgName.value = cfg.name || '';
+            cfgBase.value = cfg.apiBase || '';
+            cfgKey.value = cfg.apiKey || '';
+            cfgModel.value = cfg.model || '';
+            cfgMaxTokens.value = cfg.maxTokens || 4096;
+            formDelete.style.display = 'block';
+            configForm.classList.add('open');
+            cfgName.focus();
+        }
+
+        function resetConfigForm() {
+            editingConfigId = null;
+            cfgName.value = '';
+            cfgBase.value = '';
+            cfgKey.value = '';
+            cfgModel.value = '';
+            cfgMaxTokens.value = '';
+            formDelete.style.display = 'none';
+            configForm.classList.remove('open');
+        }
+
+        function saveConfigForm() {
+            const name = cfgName.value.trim();
+            const base = cfgBase.value.trim();
+            const key = cfgKey.value.trim();
+            const model = cfgModel.value.trim();
+            const maxTokens = parseInt(cfgMaxTokens.value) || 4096;
+            if (!name || !base || !key || !model) { showToast('请填写完整信息'); return; }
+            if (editingConfigId) {
+                const idx = configs.findIndex(c => c.id === editingConfigId);
+                if (idx !== -1) configs[idx] = { ...configs[idx], name, apiBase: base, apiKey: key, model, maxTokens };
+            } else {
+                configs.push({
+                    id: 'cfg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+                    name,
+                    apiBase: base,
+                    apiKey: key,
+                    model,
+                    maxTokens
+                });
+            }
+            saveConfigs();
+            if (!currentConfigId || !configs.some(c => c.id === currentConfigId)) {
+                currentConfigId = configs[0].id;
+                saveConfigs();
+            }
+            renderConfigList();
+            resetConfigForm();
+            showToast('✅ 配置已保存');
+            for (const a of agents) {
+                if (!a.configId || !configs.some(c => c.id === a.configId)) {
+                    a.configId = currentConfigId;
+                }
+            }
+            saveAgents();
+            renderAgentList();
+        }
+
+        function deleteConfig(id) {
+            if (configs.length <= 1) { showToast('至少保留一个配置'); return; }
+            const idx = configs.findIndex(c => c.id === id);
+            if (idx === -1) return;
+            configs.splice(idx, 1);
+            if (currentConfigId === id) currentConfigId = configs[0].id;
+            saveConfigs();
+            renderConfigList();
+            resetConfigForm();
+            showToast('已删除配置');
+            for (const a of agents) {
+                if (!configs.some(c => c.id === a.configId)) {
+                    a.configId = configs[0]?.id || null;
+                }
+            }
+            saveAgents();
+            renderAgentList();
+        }
+
+        // ---------- AI角色 CRUD ----------
+        function openAgentEditor(id) {
+            const isEdit = !!id;
+            const agent = isEdit ? agents.find(a => a.id === id) : null;
+            editingAgentId = isEdit ? id : null;
+            let optHtml = '';
+            for (const c of configs) {
+                const sel = (agent && agent.configId === c.id) || (!agent && c.id === currentConfigId) ? 'selected' : '';
+                optHtml += `<option value="${c.id}" ${sel}>${escapeHtml(c.name)}</option>`;
+            }
+            agentConfigId.innerHTML = optHtml;
+            if (isEdit && agent) {
+                agentModalTitle.textContent = '✏️ 编辑角色';
+                agentAvatar.value = agent.avatar || '🤖';
+                agentName.value = agent.name || '';
+                agentPrompt.value = agent.prompt || '';
+                agentEnabled.checked = agent.enabled !== false;
+                agentFormDelete.style.display = 'block';
+            } else {
+                agentModalTitle.textContent = '➕ 添加角色';
+                agentAvatar.value = '🤖';
+                agentName.value = '';
+                agentPrompt.value = '';
+                agentEnabled.checked = true;
+                agentFormDelete.style.display = 'none';
+            }
+            agentModal.classList.add('active');
+            agentName.focus();
+        }
+
+        function closeAgentEditor() {
+            agentModal.classList.remove('active');
+            editingAgentId = null;
+        }
+
+        function saveAgentForm() {
+            const avatar = agentAvatar.value.trim() || '🤖';
+            const name = agentName.value.trim();
+            const configId = agentConfigId.value;
+            const prompt = agentPrompt.value.trim();
+            const enabled = agentEnabled.checked;
+            if (!name) { showToast('请输入角色名称'); return; }
+            if (!configId) { showToast('请选择API配置'); return; }
+            if (editingAgentId) {
+                const idx = agents.findIndex(a => a.id === editingAgentId);
+                if (idx !== -1) agents[idx] = { ...agents[idx], avatar, name, configId, prompt, enabled };
+            } else {
+                agents.push({
+                    id: 'agent_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+                    avatar,
+                    name,
+                    configId,
+                    prompt,
+                    enabled,
+                });
+            }
+            saveAgents();
+            renderAgentList();
+            renderAtDropdown();
+            closeAgentEditor();
+            showToast('✅ 角色已保存');
+        }
+
+        function deleteAgent(id) {
+            if (agents.length <= 1) { showToast('至少保留一个角色'); return; }
+            const idx = agents.findIndex(a => a.id === id);
+            if (idx === -1) return;
+            agents.splice(idx, 1);
+            saveAgents();
+            renderAgentList();
+            renderAtDropdown();
+            const tIdx = atTargets.indexOf(id);
+            if (tIdx !== -1) atTargets.splice(tIdx, 1);
+            showToast('已删除角色');
+        }
+
+        function toggleAgent(id) {
+            const agent = agents.find(a => a.id === id);
+            if (!agent) return;
+            agent.enabled = !agent.enabled;
+            saveAgents();
+            renderAgentList();
+            renderAtDropdown();
+            if (!agent.enabled) {
+                const tIdx = atTargets.indexOf(id);
+                if (tIdx !== -1) atTargets.splice(tIdx, 1);
+            }
+            showToast(`${agent.enabled ? '✅ 已启用' : '⏸ 已禁用'} ${agent.name}`);
+        }
+
+        // ---------- 辅助函数 ----------
+        function getCurrentConfig() {
+            return configs.find(c => c.id === currentConfigId) || configs[0] || null;
+        }
+
+        function getAgentConfig(agentId) {
+            const agent = agents.find(a => a.id === agentId);
+            if (!agent) return null;
+            return configs.find(c => c.id === agent.configId) || null;
+        }
+
+        function getEnabledAgents() {
+            return agents.filter(a => a.enabled);
+        }
+
+        function genId() {
+            return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        }
+
+        function showToast(msg) {
+            const existing = document.querySelector('.toast-tip');
+            if (existing) existing.remove();
+            const div = document.createElement('div');
+            div.className = 'toast-tip';
+            div.textContent = msg;
+            document.body.appendChild(div);
+            setTimeout(() => {
+                div.style.opacity = '0';
+                div.style.transition = 'opacity 0.3s';
+                setTimeout(() => div.remove(), 400);
+            }, 2500);
+        }
+
+        function setInputEnabled(enabled) {
+            inputBox.disabled = !enabled;
+            if (!enabled) {
+                sendBtn.classList.add('stop-btn');
+                sendBtn.textContent = '⏹';
+                sendBtn.disabled = false;
+                sendBtn.title = '停止生成';
+            } else {
+                sendBtn.classList.remove('stop-btn');
+                sendBtn.textContent = '➤';
+                sendBtn.disabled = false;
+                sendBtn.title = '发送';
+            }
+        }
+
+        function autoResize() {
+            inputBox.style.height = 'auto';
+            inputBox.style.height = Math.min(inputBox.scrollHeight, 100) + 'px';
+        }
+
+        // 输入框自动上移
+        inputBox.addEventListener('focus', () => {
+            setTimeout(() => {
+                inputBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                scrollToBottomIfNeeded();
+            }, 300);
+        });
+
+        // ---------- 群聊模式切换 ----------
+        function toggleGroupMode() {
+            groupChatMode = !groupChatMode;
+            groupBtn.classList.toggle('active', groupChatMode);
+            groupBtn.textContent = groupChatMode ? '👥 群聊 ON' : '👥 群聊';
+            showToast(groupChatMode ? '✅ 群聊模式已开启，AI将自由选择是否回复' : '❌ 群聊模式已关闭');
+        }
+
+        // ---------- 流式请求 ----------
+        async function streamAgent(agent, messages_payload, msgId, onUpdate, onDone, onError) {
+            const cfg = getAgentConfig(agent.id);
+            if (!cfg) { onError(new Error('未绑定API配置')); return; }
+            const { apiBase, apiKey, model, maxTokens } = cfg;
+            const url = `${apiBase.replace(/\/+$/, '')}/chat/completions`;
+
+            const controller = new AbortController();
+            activeControllers.push(controller);
+            streamingMsgIds.add(msgId);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages_payload,
+                        stream: true,
+                        temperature: 0.8,
+                        max_tokens: maxTokens || 4096,
+                    }),
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    let errMsg = `HTTP ${response.status}`;
+                    try { const errData = await response.json();
+                        errMsg = errData.error?.message || errMsg; } catch (_) {}
+                    throw new Error(errMsg);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+                let fullContent = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || !trimmed.startsWith('data:')) continue;
+                        const data = trimmed.slice(5).trim();
+                        if (data === '[DONE]') continue;
+                        try {
+                            const json = JSON.parse(data);
+                            const delta = json.choices?.[0]?.delta?.content;
+                            if (delta) {
+                                fullContent += delta;
+                                onUpdate(fullContent);
+                            }
+                        } catch (_) {}
+                    }
+                }
+
+                onDone(fullContent);
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    onError(new Error('已中断'), true);
+                } else {
+                    onError(err);
+                }
+            } finally {
+                const idx = activeControllers.indexOf(controller);
+                if (idx !== -1) activeControllers.splice(idx, 1);
+                streamingMsgIds.delete(msgId);
+                if (streamingMsgIds.size === 0) {
+                    isStreaming = false;
+                    setInputEnabled(true);
+                    sendBtn.disabled = false;
+                }
+            }
+        }
+
+        // ---------- 打断 ----------
+        function stopAllStreams() {
+            if (activeControllers.length === 0) return;
+            for (const ctrl of activeControllers) {
+                ctrl.abort();
+            }
+            activeControllers = [];
+            for (const msgId of streamingMsgIds) {
+                const msg = messages.find(m => m.id === msgId);
+                if (msg) {
+                    msg.interrupted = true;
+                    msg.content = (msg.content || '') + ' (已中断)';
+                    finishStreamingMessage(msgId, msg.content, false, true);
+                }
+            }
+            streamingMsgIds.clear();
+            isStreaming = false;
+            setInputEnabled(true);
+            sendBtn.disabled = false;
+            showToast('⏹ 已停止生成');
+            saveCurrentConversation();
+            renderConversationList();
+        }
+
+        // ---------- 快速回复（支持群聊模式） ----------
+        async function quickReply(text) {
+            if (!text || isStreaming) return;
+            let targets = getTargetAgents();
+            if (targets.length === 0) { showToast('没有启用的AI'); return; }
+
+            // 如果是群聊模式，每个AI独立决定是否回复（随机概率40%）
+            if (groupChatMode) {
+                targets = targets.filter(agent => {
+                    // 随机决定是否参与（40%概率）
+                    return Math.random() < 0.4;
+                });
+                if (targets.length === 0) {
+                    // 如果全部沉默，显示一条提示
+                    const silentMsg = {
+                        id: genId(),
+                        role: 'divider',
+                        content: '💤 所有AI都选择了旁观，无人发言',
+                        timestamp: Date.now(),
+                    };
+                    messages.push(silentMsg);
+                    addMessageElement(silentMsg, false);
+                    saveCurrentConversation();
+                    scrollToBottomIfNeeded();
+                    showToast('💤 所有AI保持沉默');
+                    return;
+                }
+            }
+
+            // 检查每个目标是否有配置
+            for (const agent of targets) {
+                const cfg = getAgentConfig(agent.id);
+                if (!cfg || !cfg.apiKey) { showToast(`⚠️ "${agent.name}" 缺少API配置`); return; }
+            }
+
+            isStreaming = true;
+            setInputEnabled(false);
+            sendBtn.disabled = false;
+            inputBox.value = '';
+            inputBox.style.height = 'auto';
+
+            const userMsg = { id: genId(), role: 'user', content: text, timestamp: Date.now() };
+            messages.push(userMsg);
+            addMessageElement(userMsg, false);
+            saveCurrentConversation();
+            scrollToBottomIfNeeded();
+
+            const promises = targets.map(async (agent) => {
+                const msgId = genId();
+                const msg = {
+                    id: msgId,
+                    role: 'agent',
+                    agentId: agent.id,
+                    content: '',
+                    timestamp: Date.now(),
+                    streaming: true,
+                };
+                messages.push(msg);
+                addMessageElement(msg, true);
+                saveCurrentConversation();
+                scrollToBottomIfNeeded();
+
+                const history = messages.filter(m => m.id !== msgId && m.role !== 'system' && !m.interrupted).slice(-10);
+                const payload = [];
+                const sysPrompt = agent.prompt || '你是一个乐于助人的AI助手。';
+                payload.push({ role: 'system', content: sysPrompt });
+                for (const m of history) {
+                    if (m.role === 'user') {
+                        payload.push({ role: 'user', content: m.content });
+                    } else if (m.role === 'agent' && m.agentId) {
+                        const a = agents.find(ag => ag.id === m.agentId);
+                        if (a) payload.push({ role: 'assistant', content: `[${a.name}]: ${m.content}` });
+                        else payload.push({ role: 'assistant', content: m.content });
+                    }
+                }
+                payload.push({ role: 'user', content: text });
+
+                await streamAgent(agent, payload, msgId,
+                    (content) => {
+                        updateStreamingMessage(msgId, content);
+                        const m = messages.find(mm => mm.id === msgId);
+                        if (m) m.content = content;
+                    },
+                    (content) => {
+                        const m = messages.find(mm => mm.id === msgId);
+                        if (m) { m.content = content;
+                            m.streaming = false; }
+                        finishStreamingMessage(msgId, content, false, false);
+                        saveCurrentConversation();
+                        renderConversationList();
+                    },
+                    (err, interrupted = false) => {
+                        const errMsg = interrupted ? '已中断' : `❌ ${err.message || '请求失败'}`;
+                        const m = messages.find(mm => mm.id === msgId);
+                        if (m) {
+                            m.content = errMsg;
+                            m.error = !interrupted;
+                            m.interrupted = interrupted;
+                            m.streaming = false;
+                        }
+                        finishStreamingMessage(msgId, errMsg, !interrupted, interrupted);
+                        saveCurrentConversation();
+                        renderConversationList();
+                    }
+                );
+            });
+
+            await Promise.allSettled(promises);
+            if (streamingMsgIds.size === 0) {
+                isStreaming = false;
+                setInputEnabled(true);
+                sendBtn.disabled = false;
+            }
+            saveCurrentConversation();
+            renderConversationList();
+            inputBox.focus();
+        }
+
+        // ---------- 辩论（强制所有选中AI参与，不受群聊模式影响） ----------
+        async function callAgentStreamForDebate(agent, roundName, userText, history, msgId) {
+            const cfg = getAgentConfig(agent.id);
+            if (!cfg) throw new Error('未绑定API配置');
+            const { apiBase, apiKey, model, maxTokens } = cfg;
+            const url = `${apiBase.replace(/\/+$/, '')}/chat/completions`;
+
+            let historyText = '';
+            if (history.length > 0) {
+                historyText = history.map(h => `${h.name}: ${h.content}`).join('\n\n');
+            }
+
+            let systemPrompt = agent.prompt || '你是一个乐于助人的AI助手。';
+            let userPrompt = '';
+            switch (roundName) {
+                case '初步看法':
+                    userPrompt = `用户问题：${userText}\n\n请给出你的初步看法，直接阐述你的观点和理由。`;
+                    break;
+                case '相互评价':
+                    userPrompt =
+                        `用户问题：${userText}\n\n【各AI的初步看法】\n${historyText}\n\n请结合你自己的看法，客观评价其他AI的观点，指出异同、补充或质疑。`;
+                    break;
+                case '自由辩论第一轮':
+                case '自由辩论第二轮':
+                    userPrompt =
+                        `用户问题：${userText}\n\n【上一轮讨论记录】\n${historyText}\n\n请继续进行自由辩论，你可以反驳他人的观点、维护自己的立场或提出新的论据。${roundName === '自由辩论第二轮' ? ' 这是最后一轮，请做出总结性陈述。' : ''}`;
+                    break;
+                default:
+                    userPrompt = `用户问题：${userText}\n\n请给出你的看法。`;
+            }
+
+            const payload = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+            ];
+
+            const controller = new AbortController();
+            activeControllers.push(controller);
+            streamingMsgIds.add(msgId);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: payload,
+                        stream: true,
+                        temperature: 0.8,
+                        max_tokens: maxTokens || 4096,
+                    }),
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    let errMsg = `HTTP ${response.status}`;
+                    try { const errData = await response.json();
+                        errMsg = errData.error?.message || errMsg; } catch (_) {}
+                    throw new Error(errMsg);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+                let fullContent = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || !trimmed.startsWith('data:')) continue;
+                        const data = trimmed.slice(5).trim();
+                        if (data === '[DONE]') continue;
+                        try {
+                            const json = JSON.parse(data);
+                            const delta = json.choices?.[0]?.delta?.content;
+                            if (delta) {
+                                fullContent += delta;
+                                updateStreamingMessage(msgId, fullContent);
+                                const m = messages.find(mm => mm.id === msgId);
+                                if (m) m.content = fullContent;
+                            }
+                        } catch (_) {}
+                    }
+                }
+
+                const m = messages.find(mm => mm.id === msgId);
+                if (m) { m.content = fullContent;
+                    m.streaming = false; }
+                finishStreamingMessage(msgId, fullContent, false, false);
+                saveCurrentConversation();
+                renderConversationList();
+                return fullContent;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    const m = messages.find(mm => mm.id === msgId);
+                    if (m) {
+                        m.content = (m.content || '') + ' (已中断)';
+                        m.interrupted = true;
+                        m.streaming = false;
+                    }
+                    finishStreamingMessage(msgId, m?.content || '已中断', false, true);
+                    saveCurrentConversation();
+                    renderConversationList();
+                    return '已中断';
+                } else {
+                    const errMsg = `❌ ${err.message || '请求失败'}`;
+                    const m = messages.find(mm => mm.id === msgId);
+                    if (m) { m.content = errMsg;
+                        m.error = true;
+                        m.streaming = false; }
+                    finishStreamingMessage(msgId, errMsg, true, false);
+                    saveCurrentConversation();
+                    renderConversationList();
+                    return errMsg;
+                }
+            } finally {
+                const idx = activeControllers.indexOf(controller);
+                if (idx !== -1) activeControllers.splice(idx, 1);
+                streamingMsgIds.delete(msgId);
+            }
+        }
+
+        async function runDebateRound(roundName, userText, agents, history, onComplete) {
+            const promises = agents.map(async (agent) => {
+                const msgId = genId();
+                const msg = {
+                    id: msgId,
+                    role: 'agent',
+                    agentId: agent.id,
+                    content: '',
+                    timestamp: Date.now(),
+                    streaming: true,
+                };
+                messages.push(msg);
+                addMessageElement(msg, true);
+                saveCurrentConversation();
+                scrollToBottomIfNeeded();
+
+                try {
+                    const content = await callAgentStreamForDebate(agent, roundName, userText, history, msgId);
+                    if (content !== '已中断') {
+                        const m = messages.find(mm => mm.id === msgId);
+                        if (m) m.content = content;
+                        finishStreamingMessage(msgId, content, false, false);
+                    }
+                    if (onComplete) onComplete(agent, content);
+                    return content;
+                } catch (err) {
+                    // 内部已处理
+                }
+            });
+            await Promise.allSettled(promises);
+            await new Promise(r => setTimeout(r, 200));
+        }
+
+        async function startDebate() {
+            const text = inputBox.value.trim();
+            if (!text || isStreaming || isDebating) return;
+
+            const targets = getTargetAgents();
+            if (targets.length < 2) {
+                showToast('至少需要 2 个启用的 AI 才能开始讨论');
+                return;
+            }
+
+            for (const agent of targets) {
+                const cfg = getAgentConfig(agent.id);
+                if (!cfg || !cfg.apiKey) {
+                    showToast(`⚠️ "${agent.name}" 缺少API配置`);
+                    return;
+                }
+            }
+
+            isDebating = true;
+            isStreaming = true;
+            debateBtn.disabled = true;
+            setInputEnabled(false);
+            sendBtn.disabled = false;
+            inputBox.value = '';
+            inputBox.style.height = 'auto';
+
+            const userMsg = { id: genId(), role: 'user', content: text, timestamp: Date.now() };
+            messages.push(userMsg);
+            addMessageElement(userMsg, false);
+            saveCurrentConversation();
+            scrollToBottomIfNeeded();
+
+            let debateHistory = [];
+
+            addDivider('📌 阶段一：各 AI 发表初步看法');
+            await runDebateRound('初步看法', text, targets, debateHistory, (agent, content) => {
+                if (content !== '已中断') debateHistory.push({ round: 'opinion', agentId: agent.id, name: agent.name,
+                    content });
+            });
+
+            if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
+                isDebating = false;
+                isStreaming = false;
+                debateBtn.disabled = false;
+                setInputEnabled(true);
+                sendBtn.disabled = false;
+                showToast('⏹ 讨论已中断');
+                saveCurrentConversation();
+                renderConversationList();
+                return;
+            }
+
+            addDivider('🔍 阶段二：相互评价与补充');
+            await runDebateRound('相互评价', text, targets, debateHistory, (agent, content) => {
+                if (content !== '已中断') debateHistory.push({ round: 'review', agentId: agent.id, name: agent.name,
+                    content });
+            });
+            if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
+                isDebating = false;
+                isStreaming = false;
+                debateBtn.disabled = false;
+                setInputEnabled(true);
+                sendBtn.disabled = false;
+                showToast('⏹ 讨论已中断');
+                saveCurrentConversation();
+                renderConversationList();
+                return;
+            }
+
+            addDivider('⚡ 阶段三：自由辩论 · 第一轮');
+            await runDebateRound('自由辩论第一轮', text, targets, debateHistory, (agent, content) => {
+                if (content !== '已中断') debateHistory.push({ round: 'debate1', agentId: agent.id, name: agent.name,
+                    content });
+            });
+            if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
+                isDebating = false;
+                isStreaming = false;
+                debateBtn.disabled = false;
+                setInputEnabled(true);
+                sendBtn.disabled = false;
+                showToast('⏹ 讨论已中断');
+                saveCurrentConversation();
+                renderConversationList();
+                return;
+            }
+
+            addDivider('⚡ 阶段四：自由辩论 · 第二轮（最终轮）');
+            await runDebateRound('自由辩论第二轮', text, targets, debateHistory, (agent, content) => {
+                if (content !== '已中断') debateHistory.push({ round: 'debate2', agentId: agent.id, name: agent.name,
+                    content });
+            });
+
+            isDebating = false;
+            isStreaming = false;
+            debateBtn.disabled = false;
+            setInputEnabled(true);
+            sendBtn.disabled = false;
+            inputBox.focus();
+            saveCurrentConversation();
+            renderConversationList();
+            showToast('✅ 讨论结束');
+        }
+
+        // ---------- 事件绑定 ----------
+        sendBtn.addEventListener('click', () => {
+            if (isStreaming) {
+                stopAllStreams();
+                return;
+            }
+            const text = inputBox.value.trim();
+            if (text) quickReply(text);
+        });
+
+        inputBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const text = inputBox.value.trim();
+                if (text && !isStreaming) quickReply(text);
+                else if (isStreaming) stopAllStreams();
+            }
+        });
+        inputBox.addEventListener('input', autoResize);
+
+        // 群聊模式按钮
+        groupBtn.addEventListener('click', toggleGroupMode);
+
+        debateBtn.addEventListener('click', startDebate);
+
+        newChatBtn.addEventListener('click', createNewConversation);
+        newChatSidebarBtn.addEventListener('click', createNewConversation);
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            renderAgentList();
+            renderConversationList();
+        });
+        sidebarClose.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+        addAgentBtn.addEventListener('click', () => { sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            openAgentEditor(null); });
+
+        settingsBtn.addEventListener('click', () => {
+            renderConfigList();
+            resetConfigForm();
+            modal.classList.add('active');
+        });
+        modalClose.addEventListener('click', () => { modal.classList.remove('active');
+            resetConfigForm(); });
+        modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.remove('active');
+                resetConfigForm(); } });
+
+        agentModal.addEventListener('click', (e) => { if (e.target === agentModal) closeAgentEditor(); });
+
+        atBtn.addEventListener('click', (e) => { e.stopPropagation();
+            toggleAtDropdown(); });
+        document.addEventListener('click', (e) => { if (!atSelector.contains(e.target)) closeAtDropdown(); });
+
+        formCancel.addEventListener('click', resetConfigForm);
+        formSave.addEventListener('click', saveConfigForm);
+        formDelete.addEventListener('click', () => {
+            if (editingConfigId && configs.length > 1) {
+                if (confirm(`删除配置 "${configs.find(c=>c.id===editingConfigId)?.name}" 吗？`)) {
+                    deleteConfig(editingConfigId);
+                    resetConfigForm();
+                }
+            } else showToast('至少保留一个配置');
+        });
+        addConfigBtn.addEventListener('click', () => {
+            resetConfigForm();
+            editingConfigId = null;
+            formDelete.style.display = 'none';
+            configForm.classList.add('open');
+            cfgName.focus();
+        });
+
+        agentFormCancel.addEventListener('click', closeAgentEditor);
+        agentFormSave.addEventListener('click', saveAgentForm);
+        agentFormDelete.addEventListener('click', () => {
+            if (editingAgentId && agents.length > 1) {
+                if (confirm(`删除角色 "${agents.find(a=>a.id===editingAgentId)?.name}" 吗？`)) {
+                    deleteAgent(editingAgentId);
+                    closeAgentEditor();
+                }
+            } else showToast('至少保留一个角色');
+        });
+
+        fileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const content = ev.target.result;
+                    const prefix = `[文件: ${file.name}]\n`;
+                    const existing = inputBox.value;
+                    inputBox.value = existing ? existing + '\n' + prefix + content : prefix + content;
+                    inputBox.focus();
+                    autoResize();
+                    showToast(`✅ 已加载 ${file.name}`);
+                };
+                reader.onerror = function() {
+                    const prefix = `[文件: ${file.name}] (二进制)`;
+                    const existing = inputBox.value;
+                    inputBox.value = existing ? existing + '\n' + prefix : prefix;
+                    inputBox.focus();
+                    autoResize();
+                    showToast(`📎 已上传 ${file.name}`);
+                };
+                reader.readAsText(file);
+            }
+            fileInput.value = '';
+        });
+
+        const inputArea = document.getElementById('inputArea');
+        inputArea.addEventListener('dragover', (e) => { e.preventDefault();
+            inputArea.style.borderColor = 'rgba(79,140,255,0.5)'; });
+        inputArea.addEventListener('dragleave', (e) => { e.preventDefault();
+            inputArea.style.borderColor = ''; });
+        inputArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            inputArea.style.borderColor = '';
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const content = ev.target.result;
+                    const prefix = `[文件: ${file.name}]\n`;
+                    const existing = inputBox.value;
+                    inputBox.value = existing ? existing + '\n' + prefix + content : prefix + content;
+                    inputBox.focus();
+                    autoResize();
+                    showToast(`✅ 已加载 ${file.name}`);
+                };
+                reader.onerror = function() {
+                    const prefix = `[文件: ${file.name}] (二进制)`;
+                    const existing = inputBox.value;
+                    inputBox.value = existing ? existing + '\n' + prefix : prefix;
+                    inputBox.focus();
+                    autoResize();
+                    showToast(`📎 已上传 ${file.name}`);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modal.classList.contains('active')) { modal.classList.remove('active');
+                    resetConfigForm(); }
+                if (agentModal.classList.contains('active')) closeAgentEditor();
+                if (sidebar.classList.contains('open')) { sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active'); }
+                closeAtDropdown();
+                if (isStreaming) stopAllStreams();
+            }
+        });
+
+        // ---------- 初始化 ----------
+        loadConfigs();
+        loadAgents();
+        loadConversations();
+
+        renderAgentList();
+        renderConversationList();
+        renderAtDropdown();
+        renderConfigList();
+
+        if (configs.length === 0) showToast('⚠️ 请先添加API配置');
+        if (agents.length === 0) showToast('⚠️ 请添加AI角色');
+
+        if (getEnabledAgents().length > 0 && configs.some(c => c.apiKey && c.apiKey.trim() !== '')) {
+            inputBox.focus();
+        }
+
+        window.addEventListener('beforeunload', () => {
+            saveCurrentConversation();
+            saveAgents();
+            saveConfigs();
+        });
+
+        console.log('🤖 AI群聊 · 自由参与模式已启动');
+        console.log('📂 配置:', configs.length, '个');
+        console.log('👥 AI角色:', agents.length, '个');
+        console.log('💬 对话:', conversations.length, '个');
+
+        // 暴露群聊模式切换
+        window.toggleGroupMode = toggleGroupMode;
+
+    })();
+</script>
+</body>
+</html>
