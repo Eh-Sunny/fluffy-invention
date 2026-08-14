@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>AI 群聊 · 自由发言</title>
+    <title>AI 群聊 · 自由参与</title>
     <style>
         /* ===== 全局重置 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,7 +37,7 @@
         .sidebar-header .brand svg { width: 26px; height: 26px; }
         .sidebar-close { background: rgba(255,255,255,0.06); border: none; color: #8888aa; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .sidebar-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
-        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 12px 16px; }
+        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 12px 16px; display: flex; flex-direction: column; }
         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
@@ -76,6 +76,12 @@
         .conv-item .conv-actions .rename-btn:hover { color: #4f8cff; }
         .conv-item .conv-actions .delete-btn:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
         .conv-empty { text-align: center; color: #555577; font-size: 13px; padding: 16px 0; line-height: 1.6; }
+
+        /* 导出按钮 */
+        .export-section { padding: 12px 4px 4px; margin-top: auto; }
+        .export-btn { width: 100%; padding: 10px 0; background: rgba(79,140,255,0.12); border: 1px solid rgba(79,140,255,0.2); border-radius: 12px; color: #4f8cff; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .export-btn:hover { background: rgba(79,140,255,0.2); border-color: rgba(79,140,255,0.3); color: #fff; }
+        .export-btn:active { transform: scale(0.96); }
 
         /* ===== 消息区域 ===== */
         .messages { flex: 1; overflow-y: auto; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
@@ -131,16 +137,13 @@
         .at-selector .at-dropdown-item .check.checked { opacity: 1; color: #4f8cff; }
         .at-selector .at-dropdown-item .at-avatar { font-size: 16px; }
 
-        /* 群聊模式按钮 */
         .input-toolbar .group-btn { background: rgba(79,140,255,0.1); border: 1px solid rgba(79,140,255,0.15); color: #8ab4ff; padding: 2px 14px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
         .input-toolbar .group-btn:hover { background: rgba(79,140,255,0.2); color: #fff; }
         .input-toolbar .group-btn.active { background: rgba(124,92,252,0.2); border-color: rgba(124,92,252,0.3); color: #c8b0ff; }
-
         .input-toolbar .debate-btn { background: rgba(124,92,252,0.15); border: 1px solid rgba(124,92,252,0.2); color: #b8a0ff; padding: 2px 14px 2px 12px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
         .input-toolbar .debate-btn:hover { background: rgba(124,92,252,0.25); color: #fff; }
         .input-toolbar .debate-btn:active { transform: scale(0.95); }
         .input-toolbar .debate-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
         .input-toolbar .file-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #a0a0c0; width: 30px; height: 30px; border-radius: 50%; font-size: 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .input-toolbar .file-btn:hover { background: rgba(255,255,255,0.12); color: #e8e8f0; }
         .input-toolbar .file-btn:active { transform: scale(0.92); }
@@ -282,7 +285,6 @@
                 <button class="at-btn" id="atBtn"><span id="atLabel">@ 全部</span><span class="arrow" id="atArrow">▾</span></button>
                 <div class="at-dropdown" id="atDropdown"></div>
             </div>
-            <!-- 群聊模式按钮 -->
             <button class="group-btn" id="groupBtn">👥 群聊</button>
             <button class="debate-btn" id="debateBtn">💬 讨论</button>
             <button class="file-btn" id="fileBtn" title="上传文件">📎</button>
@@ -306,6 +308,10 @@
         <hr class="sidebar-divider" />
         <div class="sidebar-section-title">💬 对话历史 <button id="newChatSidebarBtn">＋ 新建</button></div>
         <div id="convList"></div>
+        <!-- 导出数据按钮 -->
+        <div class="export-section">
+            <button class="export-btn" id="exportDataBtn">📤 导出数据</button>
+        </div>
     </div>
 </div>
 
@@ -355,7 +361,7 @@
 
 <script>
     // ================================================================
-    //  完整版：自由群聊模式 + 切换对话中断流
+    //  完整版：自由群聊模式 + 切换对话中断流 + 导出数据
     // ================================================================
 
     (function() {
@@ -409,11 +415,12 @@
         const agentFormDelete = document.getElementById('agentFormDelete');
         const fileBtn = document.getElementById('fileBtn');
         const fileInput = document.getElementById('fileInput');
+        const exportBtn = document.getElementById('exportDataBtn');
 
         // ---------- 状态 ----------
         let isStreaming = false;
         let isDebating = false;
-        let groupChatMode = false; // 群聊模式开关
+        let groupChatMode = false;
         let editingAgentId = null;
         let editingConfigId = null;
         let atTargets = [];
@@ -574,12 +581,10 @@
             return conv;
         }
 
-        // ===== 修复：切换对话时中断所有流 =====
+        // 切换对话时强制中断所有流
         function loadConversation(id) {
-            // 不再检查 isStreaming，而是强制中断
             if (isStreaming || isDebating) {
                 stopAllStreams();
-                // 等待中断完成（异步）
             }
             saveCurrentConversation();
             const conv = conversations.find(c => c.id === id);
@@ -675,7 +680,6 @@
             bubble.className = 'bubble';
             if (msg.error) bubble.classList.add('error-bubble');
             if (msg.interrupted) bubble.classList.add('interrupted-bubble');
-            // 沉默标记（群聊模式下未发言）
             if (msg.silent) bubble.classList.add('silent-bubble');
 
             if (msg.role === 'divider') {
@@ -944,7 +948,6 @@
             atArrow.classList.remove('open');
         }
 
-        // 获取选中的目标AI列表（用于快速回复和辩论）
         function getTargetAgents() {
             if (atTargets.length === 0) {
                 return getEnabledAgents();
@@ -1226,7 +1229,6 @@
             inputBox.style.height = Math.min(inputBox.scrollHeight, 100) + 'px';
         }
 
-        // 输入框自动上移
         inputBox.addEventListener('focus', () => {
             setTimeout(() => {
                 inputBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1234,12 +1236,40 @@
             }, 300);
         });
 
-        // ---------- 群聊模式切换 ----------
+        // ---------- 群聊模式 ----------
         function toggleGroupMode() {
             groupChatMode = !groupChatMode;
             groupBtn.classList.toggle('active', groupChatMode);
             groupBtn.textContent = groupChatMode ? '👥 群聊 ON' : '👥 群聊';
             showToast(groupChatMode ? '✅ 群聊模式已开启，AI将自由选择是否回复' : '❌ 群聊模式已关闭');
+        }
+
+        // ---------- 导出数据 ----------
+        function exportData() {
+            try {
+                const data = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    configs: configs,
+                    agents: agents,
+                    conversations: conversations,
+                    currentConfigId: currentConfigId,
+                    currentConvId: currentConvId,
+                };
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ai_chat_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('✅ 数据已导出');
+            } catch (err) {
+                showToast('❌ 导出失败：' + err.message);
+            }
         }
 
         // ---------- 流式请求 ----------
@@ -1347,20 +1377,15 @@
             renderConversationList();
         }
 
-        // ---------- 快速回复（支持群聊模式） ----------
+        // ---------- 快速回复 ----------
         async function quickReply(text) {
             if (!text || isStreaming) return;
             let targets = getTargetAgents();
             if (targets.length === 0) { showToast('没有启用的AI'); return; }
 
-            // 如果是群聊模式，每个AI独立决定是否回复（随机概率40%）
             if (groupChatMode) {
-                targets = targets.filter(agent => {
-                    // 随机决定是否参与（40%概率）
-                    return Math.random() < 0.4;
-                });
+                targets = targets.filter(agent => Math.random() < 0.4);
                 if (targets.length === 0) {
-                    // 如果全部沉默，显示一条提示
                     const silentMsg = {
                         id: genId(),
                         role: 'divider',
@@ -1376,7 +1401,6 @@
                 }
             }
 
-            // 检查每个目标是否有配置
             for (const agent of targets) {
                 const cfg = getAgentConfig(agent.id);
                 if (!cfg || !cfg.apiKey) { showToast(`⚠️ "${agent.name}" 缺少API配置`); return; }
@@ -1465,7 +1489,7 @@
             inputBox.focus();
         }
 
-        // ---------- 辩论（强制所有选中AI参与，不受群聊模式影响） ----------
+        // ---------- 辩论 ----------
         async function callAgentStreamForDebate(agent, roundName, userText, history, msgId) {
             const cfg = getAgentConfig(agent.id);
             if (!cfg) throw new Error('未绑定API配置');
@@ -1751,9 +1775,7 @@
         });
         inputBox.addEventListener('input', autoResize);
 
-        // 群聊模式按钮
         groupBtn.addEventListener('click', toggleGroupMode);
-
         debateBtn.addEventListener('click', startDebate);
 
         newChatBtn.addEventListener('click', createNewConversation);
@@ -1881,6 +1903,9 @@
             }
         });
 
+        // 导出按钮事件
+        exportBtn.addEventListener('click', exportData);
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (modal.classList.contains('active')) { modal.classList.remove('active');
@@ -1916,12 +1941,11 @@
             saveConfigs();
         });
 
-        console.log('🤖 AI群聊 · 自由参与模式已启动');
+        console.log('🤖 AI群聊 · 自由参与 + 导出数据 已启动');
         console.log('📂 配置:', configs.length, '个');
         console.log('👥 AI角色:', agents.length, '个');
         console.log('💬 对话:', conversations.length, '个');
 
-        // 暴露群聊模式切换
         window.toggleGroupMode = toggleGroupMode;
 
     })();
