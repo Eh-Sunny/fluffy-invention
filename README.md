@@ -2,7 +2,11 @@
 
 一个基于纯前端（HTML + CSS + JavaScript）的 AI 多智能体群聊模拟器。支持同时接入多个 AI 模型（兼容 OpenAI API 格式），实现自由群聊、结构化辩论、流式输出、打断、对话历史管理等功能。
 
-![预览截图](screenshot.png) <!-- 您可以替换为自己的截图 -->
+## 📸 界面预览
+
+| 主界面 | 管理 | API配置 |
+|:---:|:---:|:---:|
+| ![主界面](images/img1.JPG) | ![管理](images/img2.JPG) | ![API配置](images/img3.JPG) |
 
 ## ✨ 核心特性
 
@@ -75,10 +79,6 @@
 ## 🤝 贡献
 
 欢迎提交 Issue 或 Pull Request。如果您有好的功能建议，也请告诉我们。
-
-## 📄 许可证
-
-[MIT](LICENSE)
 
 ---
 
