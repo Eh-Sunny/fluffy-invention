@@ -6,7 +6,7 @@
 
 | 主界面 | 管理 | API配置 |
 |:---:|:---:|:---:|
-| ![主界面](images/img1.JPG) | ![管理](images/img2.JPG) | ![API配置](images/img3.JPG) |
+| ![主界面](img1.JPG) | ![管理](img2.JPG) | ![API配置](img3.JPG) |
 
 ## ✨ 核心特性
 
