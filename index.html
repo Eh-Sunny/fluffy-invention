@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>AI 群聊 · 自由参与</title>
+    <title>AI 群聊 · 多附件</title>
     <style>
         /* ===== 全局重置 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -77,11 +77,16 @@
         .conv-item .conv-actions .delete-btn:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
         .conv-empty { text-align: center; color: #555577; font-size: 13px; padding: 16px 0; line-height: 1.6; }
 
-        /* 导出按钮 */
-        .export-section { padding: 12px 4px 4px; margin-top: auto; }
-        .export-btn { width: 100%; padding: 10px 0; background: rgba(79,140,255,0.12); border: 1px solid rgba(79,140,255,0.2); border-radius: 12px; color: #4f8cff; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        /* 导出/导入按钮 */
+        .export-section { padding: 12px 4px 4px; margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+        .export-btn, .import-btn { width: 100%; padding: 10px 0; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid transparent; }
+        .export-btn { background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.2); color: #4f8cff; }
         .export-btn:hover { background: rgba(79,140,255,0.2); border-color: rgba(79,140,255,0.3); color: #fff; }
         .export-btn:active { transform: scale(0.96); }
+        .import-btn { background: rgba(45,200,120,0.1); border-color: rgba(45,200,120,0.15); color: #4ade80; }
+        .import-btn:hover { background: rgba(45,200,120,0.2); border-color: rgba(45,200,120,0.25); color: #fff; }
+        .import-btn:active { transform: scale(0.96); }
+        #importFileInput { display: none; }
 
         /* ===== 消息区域 ===== */
         .messages { flex: 1; overflow-y: auto; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
@@ -149,6 +154,17 @@
         .input-toolbar .file-btn:active { transform: scale(0.92); }
         #fileInput { display: none; }
 
+        /* 附件列表 */
+        .file-tip { background: rgba(22,22,42,0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 6px 8px; margin: 4px 0 4px 0; display: none; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; flex-shrink: 0; }
+        .file-tip.show { display: flex; }
+        .file-tip .file-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 4px 8px 4px 6px; border: 1px solid rgba(255,255,255,0.06); }
+        .file-tip .file-item .preview { display: flex; align-items: center; gap: 4px; }
+        .file-tip .file-item .preview img { max-height: 28px; max-width: 28px; border-radius: 4px; object-fit: cover; }
+        .file-tip .file-item .preview .file-icon { font-size: 18px; }
+        .file-tip .file-item .file-name { font-size: 12px; color: #c0c0e0; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-tip .file-item .remove-attachment { background: transparent; border: none; color: #8888aa; font-size: 14px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; }
+        .file-tip .file-item .remove-attachment:hover { background: rgba(255,255,255,0.08); color: #ff6b6b; }
+
         .input-area .input-wrap { flex: 1; background: #1a1a2e; border-radius: 22px; padding: 2px 10px 2px 14px; border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.25s; display: flex; align-items: flex-end; gap: 4px; margin-top: 2px; }
         .input-area .input-wrap:focus-within { border-color: rgba(45,125,255,0.5); }
         .input-area textarea { flex: 1; background: transparent; border: none; outline: none; color: #e8e8f0; font-size: 15px; font-family: inherit; resize: none; padding: 8px 0; min-height: 22px; max-height: 100px; line-height: 1.5; }
@@ -191,6 +207,13 @@
         .config-form .field input[type="number"] { -moz-appearance: textfield; }
         .config-form .field input[type="number"]::-webkit-inner-spin-button,
         .config-form .field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .config-form .field .model-row { display: flex; gap: 6px; align-items: center; }
+        .config-form .field .model-row select { flex: 1; padding: 7px 10px; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #e8e8f0; font-size: 13px; outline: none; }
+        .config-form .field .model-row input { flex: 1; padding: 7px 10px; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #e8e8f0; font-size: 13px; outline: none; display: none; }
+        .config-form .field .model-row button { padding: 7px 14px; background: rgba(79,140,255,0.15); border: 1px solid rgba(79,140,255,0.2); border-radius: 8px; color: #4f8cff; cursor: pointer; white-space: nowrap; }
+        .config-form .field .model-row button:hover { background: rgba(79,140,255,0.25); }
+        .config-form .field .model-status { font-size: 12px; color: #666688; margin-top: 4px; }
+
         .config-form .form-actions { display: flex; gap: 8px; margin-top: 6px; }
         .config-form .form-actions button { flex: 1; padding: 8px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
         .config-form .form-actions .btn-save { background: #2d7dff; color: #fff; }
@@ -248,6 +271,7 @@
             .welcome .icon-wrap svg { width: 36px; height: 36px; }
             .welcome h2 { font-size: 18px; }
             .header-actions .new-chat-btn { font-size: 12px; padding: 0 10px; height: 30px; }
+            .file-tip .file-item .file-name { max-width: 60px; }
         }
         @media (min-width:431px) { .at-selector .at-dropdown { min-width: 200px; } }
     </style>
@@ -273,7 +297,7 @@
     <div class="messages" id="messages">
         <div class="welcome" id="welcome">
             <div class="icon-wrap"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="url(#welcomeGrad)"/><path d="M18 42C18 32 24 28 32 28C40 28 46 32 46 42" stroke="white" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="22" r="3.5" fill="white"/><circle cx="38" cy="22" r="3.5" fill="white"/><path d="M32 17V13M32 17V21M32 17H28M32 17H36" stroke="white" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="welcomeGrad" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#4F8CFF"/><stop offset="100%" stop-color="#7C5CFC"/></linearGradient></defs></svg></div>
-            <h2>🤖 群聊 · 自由参与</h2>
+            <h2>🤖 群聊 · 多附件</h2>
             <p>点击「👥 群聊」进入自由发言模式，AI可自主选择是否回复</p>
         </div>
     </div>
@@ -288,9 +312,13 @@
             <button class="group-btn" id="groupBtn">👥 群聊</button>
             <button class="debate-btn" id="debateBtn">💬 讨论</button>
             <button class="file-btn" id="fileBtn" title="上传文件">📎</button>
-            <input type="file" id="fileInput" />
+            <input type="file" id="fileInput" multiple />
             <div class="spacer"></div>
         </div>
+
+        <!-- 附件列表 -->
+        <div class="file-tip" id="fileTip"></div>
+
         <div class="input-wrap">
             <textarea id="inputBox" rows="1" placeholder="输入消息…" autofocus></textarea>
             <button class="send-btn" id="sendBtn" aria-label="发送">➤</button>
@@ -308,9 +336,11 @@
         <hr class="sidebar-divider" />
         <div class="sidebar-section-title">💬 对话历史 <button id="newChatSidebarBtn">＋ 新建</button></div>
         <div id="convList"></div>
-        <!-- 导出数据按钮 -->
+        <!-- 导出/导入按钮 -->
         <div class="export-section">
             <button class="export-btn" id="exportDataBtn">📤 导出数据</button>
+            <button class="import-btn" id="importDataBtn">📥 导入数据</button>
+            <input type="file" id="importFileInput" accept=".json" />
         </div>
     </div>
 </div>
@@ -325,7 +355,15 @@
             <div class="field"><label>名称</label><input id="cfgName" placeholder="例如：DeepSeek" /></div>
             <div class="field"><label>API 地址</label><input id="cfgBase" placeholder="https://api.deepseek.com/v1" /></div>
             <div class="field"><label>API Key</label><input id="cfgKey" type="password" placeholder="sk-..." /></div>
-            <div class="field"><label>模型名称</label><input id="cfgModel" placeholder="deepseek-chat" /></div>
+            <div class="field">
+                <label>模型名称</label>
+                <div class="model-row">
+                    <select id="cfgModelSelect"><option value="">请获取模型</option></select>
+                    <input id="cfgModelInput" type="text" placeholder="手动输入" />
+                    <button id="fetchModelsBtn">获取模型</button>
+                </div>
+                <div class="model-status" id="modelFetchStatus"></div>
+            </div>
             <div class="field"><label>最大输出 Token</label><input id="cfgMaxTokens" type="number" placeholder="4096" min="1" step="1" /></div>
             <div class="form-actions">
                 <button class="btn-cancel" id="formCancel">取消</button>
@@ -361,7 +399,7 @@
 
 <script>
     // ================================================================
-    //  完整版：自由群聊模式 + 切换对话中断流 + 导出数据
+    //  多附件支持
     // ================================================================
 
     (function() {
@@ -395,7 +433,10 @@
         const cfgName = document.getElementById('cfgName');
         const cfgBase = document.getElementById('cfgBase');
         const cfgKey = document.getElementById('cfgKey');
-        const cfgModel = document.getElementById('cfgModel');
+        const cfgModelSelect = document.getElementById('cfgModelSelect');
+        const cfgModelInput = document.getElementById('cfgModelInput');
+        const fetchModelsBtn = document.getElementById('fetchModelsBtn');
+        const modelFetchStatus = document.getElementById('modelFetchStatus');
         const cfgMaxTokens = document.getElementById('cfgMaxTokens');
         const formSave = document.getElementById('formSave');
         const formCancel = document.getElementById('formCancel');
@@ -416,6 +457,11 @@
         const fileBtn = document.getElementById('fileBtn');
         const fileInput = document.getElementById('fileInput');
         const exportBtn = document.getElementById('exportDataBtn');
+        const importBtn = document.getElementById('importDataBtn');
+        const importFileInput = document.getElementById('importFileInput');
+
+        // 附件相关 DOM
+        const fileTip = document.getElementById('fileTip');
 
         // ---------- 状态 ----------
         let isStreaming = false;
@@ -426,6 +472,9 @@
         let atTargets = [];
         let activeControllers = [];
         let streamingMsgIds = new Set();
+
+        // 附件数组
+        let uploadedFiles = []; // 每个元素: { file, dataUrl, content, isText, isImage }
 
         // ---------- 存储 ----------
         const STORAGE = {
@@ -581,7 +630,6 @@
             return conv;
         }
 
-        // 切换对话时强制中断所有流
         function loadConversation(id) {
             if (isStreaming || isDebating) {
                 stopAllStreams();
@@ -1012,11 +1060,28 @@
             cfgName.value = cfg.name || '';
             cfgBase.value = cfg.apiBase || '';
             cfgKey.value = cfg.apiKey || '';
-            cfgModel.value = cfg.model || '';
+            if (cfg.model) {
+                const opt = Array.from(cfgModelSelect.options).some(o => o.value === cfg.model);
+                if (opt) {
+                    cfgModelSelect.value = cfg.model;
+                    cfgModelSelect.style.display = 'block';
+                    cfgModelInput.style.display = 'none';
+                } else {
+                    cfgModelInput.value = cfg.model;
+                    cfgModelInput.style.display = 'block';
+                    cfgModelSelect.style.display = 'none';
+                }
+            } else {
+                cfgModelSelect.value = '';
+                cfgModelSelect.style.display = 'block';
+                cfgModelInput.style.display = 'none';
+                cfgModelInput.value = '';
+            }
             cfgMaxTokens.value = cfg.maxTokens || 4096;
             formDelete.style.display = 'block';
             configForm.classList.add('open');
             cfgName.focus();
+            modelFetchStatus.textContent = '';
         }
 
         function resetConfigForm() {
@@ -1024,19 +1089,78 @@
             cfgName.value = '';
             cfgBase.value = '';
             cfgKey.value = '';
-            cfgModel.value = '';
+            cfgModelSelect.value = '';
+            cfgModelSelect.style.display = 'block';
+            cfgModelInput.style.display = 'none';
+            cfgModelInput.value = '';
             cfgMaxTokens.value = '';
             formDelete.style.display = 'none';
             configForm.classList.remove('open');
+            modelFetchStatus.textContent = '';
+        }
+
+        // 获取模型
+        async function fetchModels() {
+            const base = cfgBase.value.trim();
+            const key = cfgKey.value.trim();
+            if (!base) { showToast('请先填写 API 地址'); return; }
+            if (!key) { showToast('请先填写 API Key'); return; }
+
+            modelFetchStatus.textContent = '⏳ 正在获取模型...';
+            modelFetchStatus.style.color = '#8888aa';
+
+            try {
+                const url = `${base.replace(/\/+$/, '')}/models`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${key}` },
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                let models = [];
+                if (data.data && Array.isArray(data.data)) {
+                    models = data.data.map(m => m.id || m).filter(Boolean);
+                } else if (Array.isArray(data)) {
+                    models = data.map(m => m.id || m).filter(Boolean);
+                } else {
+                    throw new Error('无法解析模型列表');
+                }
+                if (models.length === 0) throw new Error('未获取到模型');
+
+                cfgModelSelect.innerHTML = '';
+                for (const m of models) {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m;
+                    cfgModelSelect.appendChild(opt);
+                }
+                cfgModelSelect.value = models[0];
+                cfgModelSelect.style.display = 'block';
+                cfgModelInput.style.display = 'none';
+                modelFetchStatus.textContent = `✅ 已获取 ${models.length} 个模型`;
+                modelFetchStatus.style.color = '#4ade80';
+                showToast(`✅ 已获取 ${models.length} 个模型`);
+            } catch (err) {
+                modelFetchStatus.textContent = `❌ 获取失败：${err.message}`;
+                modelFetchStatus.style.color = '#ff6b6b';
+                cfgModelSelect.style.display = 'none';
+                cfgModelInput.style.display = 'block';
+                showToast('❌ 获取模型失败，请手动输入');
+            }
         }
 
         function saveConfigForm() {
             const name = cfgName.value.trim();
             const base = cfgBase.value.trim();
             const key = cfgKey.value.trim();
-            const model = cfgModel.value.trim();
+            let model = '';
+            if (cfgModelSelect.style.display !== 'none' && cfgModelSelect.value) {
+                model = cfgModelSelect.value;
+            } else if (cfgModelInput.style.display !== 'none' && cfgModelInput.value.trim()) {
+                model = cfgModelInput.value.trim();
+            }
             const maxTokens = parseInt(cfgMaxTokens.value) || 4096;
             if (!name || !base || !key || !model) { showToast('请填写完整信息'); return; }
+
             if (editingConfigId) {
                 const idx = configs.findIndex(c => c.id === editingConfigId);
                 if (idx !== -1) configs[idx] = { ...configs[idx], name, apiBase: base, apiKey: key, model, maxTokens };
@@ -1244,9 +1368,10 @@
             showToast(groupChatMode ? '✅ 群聊模式已开启，AI将自由选择是否回复' : '❌ 群聊模式已关闭');
         }
 
-        // ---------- 导出数据 ----------
+        // ---------- 导出/导入 ----------
         function exportData() {
             try {
+                saveCurrentConversation();
                 const data = {
                     version: '1.0',
                     exportDate: new Date().toISOString(),
@@ -1270,6 +1395,150 @@
             } catch (err) {
                 showToast('❌ 导出失败：' + err.message);
             }
+        }
+
+        function importData(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.configs || !data.agents || !data.conversations) {
+                        throw new Error('数据格式无效：缺少必要字段');
+                    }
+                    if (!confirm('导入将覆盖当前所有数据（配置、角色、对话历史），确定继续吗？')) return;
+
+                    configs = data.configs || [];
+                    agents = data.agents || [];
+                    conversations = data.conversations || [];
+                    currentConfigId = data.currentConfigId || (configs.length > 0 ? configs[0].id : null);
+                    currentConvId = data.currentConvId || (conversations.length > 0 ? conversations[0].id : null);
+
+                    saveConfigs();
+                    saveAgents();
+                    saveConversations();
+                    loadCurrentConvMessages();
+                    renderAgentList();
+                    renderConversationList();
+                    renderAtDropdown();
+                    renderConfigList();
+                    showToast('✅ 数据导入成功');
+                } catch (err) {
+                    showToast('❌ 导入失败：' + err.message);
+                }
+            };
+            reader.onerror = function() {
+                showToast('❌ 读取文件失败');
+            };
+            reader.readAsText(file);
+        }
+
+        // ---------- 附件处理（多附件） ----------
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const isText = file.type.startsWith('text/') || file.name.match(/\.(txt|md|json|js|css|html|xml|yml|yaml|log|csv|tsv|py|java|c|cpp|h|sh|bat|ps1|rb|go|rs|swift|kt|dart)$/i);
+                const isImage = file.type.startsWith('image/');
+
+                if (isText) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        uploadedFiles.push({
+                            file: file,
+                            dataUrl: null,
+                            content: e.target.result,
+                            isText: true,
+                            isImage: false,
+                        });
+                        renderAttachments();
+                        showToast(`✅ 已附加文本文件: ${file.name}`);
+                    };
+                    reader.onerror = function() {
+                        showToast('❌ 读取文件失败');
+                    };
+                    reader.readAsText(file);
+                } else if (isImage) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        uploadedFiles.push({
+                            file: file,
+                            dataUrl: e.target.result,
+                            content: null,
+                            isText: false,
+                            isImage: true,
+                        });
+                        renderAttachments();
+                        showToast(`✅ 已附加图片: ${file.name}`);
+                    };
+                    reader.onerror = function() {
+                        showToast('❌ 读取图片失败');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // 其他文件，不读取内容
+                    uploadedFiles.push({
+                        file: file,
+                        dataUrl: null,
+                        content: null,
+                        isText: false,
+                        isImage: false,
+                    });
+                    renderAttachments();
+                    showToast(`📎 已附加文件: ${file.name}`);
+                }
+            }
+        }
+
+        function renderAttachments() {
+            if (uploadedFiles.length === 0) {
+                fileTip.classList.remove('show');
+                fileTip.innerHTML = '';
+                return;
+            }
+            fileTip.classList.add('show');
+            let html = '';
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const item = uploadedFiles[i];
+                const file = item.file;
+                let previewHtml = '';
+                if (item.isImage && item.dataUrl) {
+                    previewHtml = `<img src="${item.dataUrl}" alt="${escapeHtml(file.name)}" />`;
+                } else {
+                    previewHtml = `<span class="file-icon">📎</span>`;
+                }
+                html += `
+                    <div class="file-item" data-index="${i}">
+                        <div class="preview">
+                            ${previewHtml}
+                            <span class="file-name">${escapeHtml(file.name)}</span>
+                        </div>
+                        <button class="remove-attachment" data-index="${i}" title="移除">✕</button>
+                    </div>
+                `;
+            }
+            fileTip.innerHTML = html;
+            // 绑定删除事件
+            fileTip.querySelectorAll('.remove-attachment').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    removeAttachment(idx);
+                });
+            });
+        }
+
+        function removeAttachment(index) {
+            if (index >= 0 && index < uploadedFiles.length) {
+                uploadedFiles.splice(index, 1);
+                renderAttachments();
+                if (uploadedFiles.length === 0) showToast('已移除所有附件');
+                else showToast('已移除一个附件');
+            }
+        }
+
+        function clearAllAttachments() {
+            uploadedFiles = [];
+            renderAttachments();
         }
 
         // ---------- 流式请求 ----------
@@ -1377,9 +1646,11 @@
             renderConversationList();
         }
 
-        // ---------- 快速回复 ----------
+        // ---------- 快速回复（支持多附件） ----------
         async function quickReply(text) {
-            if (!text || isStreaming) return;
+            if (!text && uploadedFiles.length === 0) { showToast('请输入消息或上传文件'); return; }
+            if (isStreaming) return;
+
             let targets = getTargetAgents();
             if (targets.length === 0) { showToast('没有启用的AI'); return; }
 
@@ -1412,11 +1683,28 @@
             inputBox.value = '';
             inputBox.style.height = 'auto';
 
-            const userMsg = { id: genId(), role: 'user', content: text, timestamp: Date.now() };
+            // 构建用户消息
+            let userContent = text || '';
+            // 遍历所有附件
+            for (const item of uploadedFiles) {
+                const file = item.file;
+                if (item.isText && item.content) {
+                    userContent += `\n\n[附件: ${file.name}]\n${item.content}`;
+                } else if (item.isImage) {
+                    userContent += `\n\n[图片: ${file.name}]`;
+                } else {
+                    userContent += `\n\n[文件: ${file.name}]`;
+                }
+            }
+
+            const userMsg = { id: genId(), role: 'user', content: userContent, timestamp: Date.now() };
             messages.push(userMsg);
             addMessageElement(userMsg, false);
             saveCurrentConversation();
             scrollToBottomIfNeeded();
+
+            // 清空附件
+            clearAllAttachments();
 
             const promises = targets.map(async (agent) => {
                 const msgId = genId();
@@ -1446,7 +1734,7 @@
                         else payload.push({ role: 'assistant', content: m.content });
                     }
                 }
-                payload.push({ role: 'user', content: text });
+                payload.push({ role: 'user', content: userContent });
 
                 await streamAgent(agent, payload, msgId,
                     (content) => {
@@ -1489,8 +1777,8 @@
             inputBox.focus();
         }
 
-        // ---------- 辩论 ----------
-        async function callAgentStreamForDebate(agent, roundName, userText, history, msgId) {
+        // ---------- 辩论（支持多附件） ----------
+        async function callAgentStreamForDebate(agent, roundName, userText, history, msgId, attachments) {
             const cfg = getAgentConfig(agent.id);
             if (!cfg) throw new Error('未绑定API配置');
             const { apiBase, apiKey, model, maxTokens } = cfg;
@@ -1502,22 +1790,34 @@
             }
 
             let systemPrompt = agent.prompt || '你是一个乐于助人的AI助手。';
+            let fileParts = '';
+            for (const item of attachments) {
+                const file = item.file;
+                if (item.isText && item.content) {
+                    fileParts += `\n\n[附件: ${file.name}]\n${item.content}`;
+                } else if (item.isImage) {
+                    fileParts += `\n\n[图片: ${file.name}]`;
+                } else {
+                    fileParts += `\n\n[文件: ${file.name}]`;
+                }
+            }
+
             let userPrompt = '';
             switch (roundName) {
                 case '初步看法':
-                    userPrompt = `用户问题：${userText}\n\n请给出你的初步看法，直接阐述你的观点和理由。`;
+                    userPrompt = `用户问题：${userText}${fileParts}\n\n请给出你的初步看法，直接阐述你的观点和理由。`;
                     break;
                 case '相互评价':
                     userPrompt =
-                        `用户问题：${userText}\n\n【各AI的初步看法】\n${historyText}\n\n请结合你自己的看法，客观评价其他AI的观点，指出异同、补充或质疑。`;
+                        `用户问题：${userText}${fileParts}\n\n【各AI的初步看法】\n${historyText}\n\n请结合你自己的看法，客观评价其他AI的观点，指出异同、补充或质疑。`;
                     break;
                 case '自由辩论第一轮':
                 case '自由辩论第二轮':
                     userPrompt =
-                        `用户问题：${userText}\n\n【上一轮讨论记录】\n${historyText}\n\n请继续进行自由辩论，你可以反驳他人的观点、维护自己的立场或提出新的论据。${roundName === '自由辩论第二轮' ? ' 这是最后一轮，请做出总结性陈述。' : ''}`;
+                        `用户问题：${userText}${fileParts}\n\n【上一轮讨论记录】\n${historyText}\n\n请继续进行自由辩论，你可以反驳他人的观点、维护自己的立场或提出新的论据。${roundName === '自由辩论第二轮' ? ' 这是最后一轮，请做出总结性陈述。' : ''}`;
                     break;
                 default:
-                    userPrompt = `用户问题：${userText}\n\n请给出你的看法。`;
+                    userPrompt = `用户问题：${userText}${fileParts}\n\n请给出你的看法。`;
             }
 
             const payload = [
@@ -1619,7 +1919,7 @@
             }
         }
 
-        async function runDebateRound(roundName, userText, agents, history, onComplete) {
+        async function runDebateRound(roundName, userText, agents, history, onComplete, attachments) {
             const promises = agents.map(async (agent) => {
                 const msgId = genId();
                 const msg = {
@@ -1636,7 +1936,7 @@
                 scrollToBottomIfNeeded();
 
                 try {
-                    const content = await callAgentStreamForDebate(agent, roundName, userText, history, msgId);
+                    const content = await callAgentStreamForDebate(agent, roundName, userText, history, msgId, attachments);
                     if (content !== '已中断') {
                         const m = messages.find(mm => mm.id === msgId);
                         if (m) m.content = content;
@@ -1654,7 +1954,8 @@
 
         async function startDebate() {
             const text = inputBox.value.trim();
-            if (!text || isStreaming || isDebating) return;
+            if (!text && uploadedFiles.length === 0) { showToast('请输入话题或上传文件'); return; }
+            if (isStreaming || isDebating) return;
 
             const targets = getTargetAgents();
             if (targets.length < 2) {
@@ -1678,11 +1979,28 @@
             inputBox.value = '';
             inputBox.style.height = 'auto';
 
-            const userMsg = { id: genId(), role: 'user', content: text, timestamp: Date.now() };
+            // 构建用户消息
+            let userContent = text || '';
+            const attachmentsCopy = uploadedFiles.slice(); // 拷贝一份
+            for (const item of attachmentsCopy) {
+                const file = item.file;
+                if (item.isText && item.content) {
+                    userContent += `\n\n[附件: ${file.name}]\n${item.content}`;
+                } else if (item.isImage) {
+                    userContent += `\n\n[图片: ${file.name}]`;
+                } else {
+                    userContent += `\n\n[文件: ${file.name}]`;
+                }
+            }
+
+            const userMsg = { id: genId(), role: 'user', content: userContent, timestamp: Date.now() };
             messages.push(userMsg);
             addMessageElement(userMsg, false);
             saveCurrentConversation();
             scrollToBottomIfNeeded();
+
+            // 清空附件
+            clearAllAttachments();
 
             let debateHistory = [];
 
@@ -1690,7 +2008,7 @@
             await runDebateRound('初步看法', text, targets, debateHistory, (agent, content) => {
                 if (content !== '已中断') debateHistory.push({ round: 'opinion', agentId: agent.id, name: agent.name,
                     content });
-            });
+            }, attachmentsCopy);
 
             if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
                 isDebating = false;
@@ -1708,7 +2026,7 @@
             await runDebateRound('相互评价', text, targets, debateHistory, (agent, content) => {
                 if (content !== '已中断') debateHistory.push({ round: 'review', agentId: agent.id, name: agent.name,
                     content });
-            });
+            }, attachmentsCopy);
             if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
                 isDebating = false;
                 isStreaming = false;
@@ -1725,7 +2043,7 @@
             await runDebateRound('自由辩论第一轮', text, targets, debateHistory, (agent, content) => {
                 if (content !== '已中断') debateHistory.push({ round: 'debate1', agentId: agent.id, name: agent.name,
                     content });
-            });
+            }, attachmentsCopy);
             if (streamingMsgIds.size > 0 || activeControllers.length > 0) {
                 isDebating = false;
                 isStreaming = false;
@@ -1742,7 +2060,7 @@
             await runDebateRound('自由辩论第二轮', text, targets, debateHistory, (agent, content) => {
                 if (content !== '已中断') debateHistory.push({ round: 'debate2', agentId: agent.id, name: agent.name,
                     content });
-            });
+            }, attachmentsCopy);
 
             isDebating = false;
             isStreaming = false;
@@ -1762,15 +2080,16 @@
                 return;
             }
             const text = inputBox.value.trim();
-            if (text) quickReply(text);
+            if (text || uploadedFiles.length > 0) quickReply(text);
+            else showToast('请输入消息或上传文件');
         });
 
         inputBox.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 const text = inputBox.value.trim();
-                if (text && !isStreaming) quickReply(text);
-                else if (isStreaming) stopAllStreams();
+                if (text || uploadedFiles.length > 0) quickReply(text);
+                else showToast('请输入消息或上传文件');
             }
         });
         inputBox.addEventListener('input', autoResize);
@@ -1832,6 +2151,7 @@
             configForm.classList.add('open');
             cfgName.focus();
         });
+        fetchModelsBtn.addEventListener('click', fetchModels);
 
         agentFormCancel.addEventListener('click', closeAgentEditor);
         agentFormSave.addEventListener('click', saveAgentForm);
@@ -1844,33 +2164,16 @@
             } else showToast('至少保留一个角色');
         });
 
+        // 文件上传
         fileBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const content = ev.target.result;
-                    const prefix = `[文件: ${file.name}]\n`;
-                    const existing = inputBox.value;
-                    inputBox.value = existing ? existing + '\n' + prefix + content : prefix + content;
-                    inputBox.focus();
-                    autoResize();
-                    showToast(`✅ 已加载 ${file.name}`);
-                };
-                reader.onerror = function() {
-                    const prefix = `[文件: ${file.name}] (二进制)`;
-                    const existing = inputBox.value;
-                    inputBox.value = existing ? existing + '\n' + prefix : prefix;
-                    inputBox.focus();
-                    autoResize();
-                    showToast(`📎 已上传 ${file.name}`);
-                };
-                reader.readAsText(file);
+                handleFiles(e.target.files);
             }
             fileInput.value = '';
         });
 
+        // 拖拽上传
         const inputArea = document.getElementById('inputArea');
         inputArea.addEventListener('dragover', (e) => { e.preventDefault();
             inputArea.style.borderColor = 'rgba(79,140,255,0.5)'; });
@@ -1880,31 +2183,19 @@
             e.preventDefault();
             inputArea.style.borderColor = '';
             if (e.dataTransfer.files.length > 0) {
-                const file = e.dataTransfer.files[0];
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const content = ev.target.result;
-                    const prefix = `[文件: ${file.name}]\n`;
-                    const existing = inputBox.value;
-                    inputBox.value = existing ? existing + '\n' + prefix + content : prefix + content;
-                    inputBox.focus();
-                    autoResize();
-                    showToast(`✅ 已加载 ${file.name}`);
-                };
-                reader.onerror = function() {
-                    const prefix = `[文件: ${file.name}] (二进制)`;
-                    const existing = inputBox.value;
-                    inputBox.value = existing ? existing + '\n' + prefix : prefix;
-                    inputBox.focus();
-                    autoResize();
-                    showToast(`📎 已上传 ${file.name}`);
-                };
-                reader.readAsText(file);
+                handleFiles(e.dataTransfer.files);
             }
         });
 
-        // 导出按钮事件
+        // 导出/导入
         exportBtn.addEventListener('click', exportData);
+        importBtn.addEventListener('click', () => importFileInput.click());
+        importFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importData(e.target.files[0]);
+                importFileInput.value = '';
+            }
+        });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1941,7 +2232,7 @@
             saveConfigs();
         });
 
-        console.log('🤖 AI群聊 · 自由参与 + 导出数据 已启动');
+        console.log('🤖 AI群聊 · 多附件支持 已启动');
         console.log('📂 配置:', configs.length, '个');
         console.log('👥 AI角色:', agents.length, '个');
         console.log('💬 对话:', conversations.length, '个');
