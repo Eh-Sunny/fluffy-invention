@@ -2,261 +2,357 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>AI 群聊 · 配置中心优化</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>AI 群聊 · 知识库 Pro</title>
     <style>
-        /* ===== 全局重置 ===== */
+        :root {
+            --bg-primary: #0d0d1a;
+            --bg-secondary: #12121f;
+            --bg-card: rgba(255,255,255,0.03);
+            --bg-input: #0d0d1a;
+            --bg-input-border: rgba(255,255,255,0.08);
+            --bg-hover: rgba(255,255,255,0.05);
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0c0;
+            --text-muted: #666688;
+            --text-inverse: #0d0d1a;
+            --border-color: rgba(255,255,255,0.06);
+            --shadow-color: rgba(0,0,0,0.6);
+            --accent: #2d7dff;
+            --accent-hover: #3d8dff;
+            --accent-bg: rgba(79,140,255,0.15);
+            --danger: #ff6b6b;
+            --danger-bg: rgba(255,60,60,0.12);
+            --success: #4ade80;
+            --success-bg: rgba(45,200,120,0.1);
+            --toast-bg: rgba(22,22,42,0.95);
+            --modal-bg: #16162a;
+            --modal-border: rgba(255,255,255,0.06);
+            --bubble-user: #2d7dff;
+            --bubble-assistant: #1a1a2e;
+            --bubble-assistant-border: rgba(255,255,255,0.06);
+            --input-area-bg: rgba(13,13,26,0.92);
+            --header-bg: rgba(13,13,26,0.92);
+            --config-bg: #0d0d1a;
+            --config-item-bg: rgba(255,255,255,0.03);
+            --config-item-hover: rgba(255,255,255,0.06);
+            --config-item-border: transparent;
+            --folder-bg: rgba(255,255,255,0.05);
+            --folder-hover: rgba(255,255,255,0.08);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f0f0f5;
+            --bg-secondary: #e8e8ee;
+            --bg-card: rgba(0,0,0,0.03);
+            --bg-input: #ffffff;
+            --bg-input-border: rgba(0,0,0,0.1);
+            --bg-hover: rgba(0,0,0,0.05);
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a5e;
+            --text-muted: #8888aa;
+            --text-inverse: #ffffff;
+            --border-color: rgba(0,0,0,0.08);
+            --shadow-color: rgba(0,0,0,0.2);
+            --accent: #2d7dff;
+            --accent-hover: #3d8dff;
+            --accent-bg: rgba(45,125,255,0.1);
+            --danger: #e53e3e;
+            --danger-bg: rgba(229,62,62,0.08);
+            --success: #2f9e5a;
+            --success-bg: rgba(47,158,90,0.08);
+            --toast-bg: rgba(240,240,245,0.95);
+            --modal-bg: #ffffff;
+            --modal-border: rgba(0,0,0,0.08);
+            --bubble-user: #2d7dff;
+            --bubble-assistant: #f0f0f5;
+            --bubble-assistant-border: rgba(0,0,0,0.06);
+            --input-area-bg: rgba(240,240,245,0.92);
+            --header-bg: rgba(240,240,245,0.92);
+            --config-bg: #f0f0f5;
+            --config-item-bg: rgba(0,0,0,0.02);
+            --config-item-hover: rgba(0,0,0,0.04);
+            --config-item-border: rgba(0,0,0,0.05);
+            --folder-bg: rgba(0,0,0,0.05);
+            --folder-hover: rgba(0,0,0,0.08);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #0d0d1a; color: #e8e8f0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        .phone { width: 100%; max-width: 430px; height: 100vh; max-height: 932px; background: #0d0d1a; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8); }
-        @media (min-width:431px) { .phone { border-radius: 32px; border: 1px solid rgba(255,255,255,0.06); } }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; transition: background 0.3s, color 0.3s; }
+        .phone { width: 100%; max-width: 430px; height: 100vh; max-height: 932px; background: var(--bg-primary); display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 60px var(--shadow-color); transition: background 0.3s; padding-top: 6px; }
+        @media (min-width:431px) { .phone { border-radius: 32px; border: 1px solid var(--border-color); } }
         @media (max-width:430px) { .phone { max-height: 100vh; border-radius: 0; box-shadow: none; } }
 
-        /* ===== 顶部导航 ===== */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px 8px; background: rgba(13,13,26,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; z-index: 10; min-height: 52px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px 8px; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 10; min-height: 52px; transition: background 0.3s, border-color 0.3s; }
         .header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-        .menu-btn { background: rgba(255,255,255,0.06); border: none; color: #a0a0c0; width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .menu-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .menu-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .menu-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
         .menu-btn:active { transform: scale(0.92); }
         .header .logo { font-size: 17px; font-weight: 700; background: linear-gradient(135deg,#4f8cff,#7c5cfc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
         .header .logo .logo-icon svg { width: 22px; height: 22px; }
         .header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .header-actions { display: flex; align-items: center; gap: 4px; }
-        .header-actions button { background: rgba(255,255,255,0.06); border: none; color: #a0a0c0; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .header-actions button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .header-actions button { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .header-actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
         .header-actions button:active { transform: scale(0.92); }
-        .header-actions .new-chat-btn { background: rgba(79,140,255,0.15); color: #4f8cff; font-weight: 600; width: auto; padding: 0 14px; border-radius: 20px; font-size: 14px; gap: 4px; }
-        .header-actions .new-chat-btn:hover { background: rgba(79,140,255,0.25); color: #fff; }
+        .header-actions .new-chat-btn { background: var(--accent-bg); color: var(--accent); font-weight: 600; width: auto; padding: 0 14px; border-radius: 20px; font-size: 14px; gap: 4px; border-color: transparent; }
+        .header-actions .new-chat-btn:hover { background: var(--accent); color: #fff; }
+        .theme-toggle-btn { font-size: 18px; }
 
-        /* ===== 侧边栏 ===== */
         .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
         .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
-        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; max-width: 80vw; background: #12121f; z-index: 100; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); box-shadow: 4px 0 40px rgba(0,0,0,0.6); }
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; max-width: 80vw; background: var(--bg-secondary); z-index: 100; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); display: flex; flex-direction: column; border-right: 1px solid var(--border-color); box-shadow: 4px 0 40px var(--shadow-color); }
         .sidebar.open { transform: translateX(0); }
-        .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
-        .sidebar-header .brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: #e8e8f0; }
+        .sidebar-header { padding: 16px 18px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header .brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: var(--text-primary); }
         .sidebar-header .brand svg { width: 26px; height: 26px; }
-        .sidebar-close { background: rgba(255,255,255,0.06); border: none; color: #8888aa; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .sidebar-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .sidebar-close { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .sidebar-close:hover { background: var(--bg-hover); color: var(--text-primary); }
         .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 12px 16px; display: flex; flex-direction: column; }
         .sidebar-scroll::-webkit-scrollbar { width: 3px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
-        .sidebar-section-title { font-size: 12px; font-weight: 600; color: #666688; padding: 16px 4px 8px; display: flex; align-items: center; justify-content: space-between; }
-        .sidebar-section-title button { background: transparent; border: none; color: #4f8cff; font-size: 12px; cursor: pointer; padding: 2px 8px; border-radius: 10px; }
-        .sidebar-section-title button:hover { background: rgba(79,140,255,0.1); }
-        .sidebar-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 4px 0; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .sidebar-section-title { font-size: 12px; font-weight: 600; color: var(--text-muted); padding: 16px 4px 8px; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-section-title button { background: transparent; border: none; color: var(--accent); font-size: 12px; cursor: pointer; padding: 2px 8px; border-radius: 10px; }
+        .sidebar-section-title button:hover { background: var(--accent-bg); }
+        .sidebar-divider { border: none; border-top: 1px solid var(--border-color); margin: 4px 0; }
 
-        /* 对话历史 */
         .conv-item { padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; border: 1px solid transparent; }
-        .conv-item:hover { background: rgba(255,255,255,0.05); }
-        .conv-item.active { background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.2); }
+        .conv-item:hover { background: var(--bg-hover); }
+        .conv-item.active { background: var(--accent-bg); border-color: var(--accent); }
         .conv-item .conv-info { flex: 1; min-width: 0; }
-        .conv-item .conv-title { font-size: 14px; font-weight: 500; color: #e0e0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .conv-item .conv-meta { font-size: 11px; color: #666688; margin-top: 2px; }
+        .conv-item .conv-title { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-item .conv-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
         .conv-item .conv-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
         .conv-item:hover .conv-actions { opacity: 1; }
-        .conv-item .conv-actions button { background: transparent; border: none; color: #666688; font-size: 14px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: all 0.15s; }
-        .conv-item .conv-actions button:hover { background: rgba(255,255,255,0.08); color: #e8e8f0; }
-        .conv-item .conv-actions .rename-btn:hover { color: #4f8cff; }
-        .conv-item .conv-actions .delete-btn:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
-        .conv-empty { text-align: center; color: #555577; font-size: 13px; padding: 16px 0; line-height: 1.6; }
+        .conv-item .conv-actions button { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: all 0.15s; }
+        .conv-item .conv-actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .conv-item .conv-actions .rename-btn:hover { color: var(--accent); }
+        .conv-item .conv-actions .delete-btn:hover { background: var(--danger-bg); color: var(--danger); }
+        .conv-empty { text-align: center; color: var(--text-muted); font-size: 13px; padding: 16px 0; line-height: 1.6; }
 
-        /* 导出/导入按钮（同一行） */
         .export-section { padding: 8px 4px 4px; margin-top: auto; display: flex; gap: 6px; }
         .export-section .export-btn,
         .export-section .import-btn { flex: 1; padding: 6px 0; border-radius: 10px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; border: 1px solid transparent; text-align: center; }
-        .export-section .export-btn { background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.2); color: #4f8cff; }
-        .export-section .export-btn:hover { background: rgba(79,140,255,0.2); border-color: rgba(79,140,255,0.3); color: #fff; }
-        .export-section .import-btn { background: rgba(45,200,120,0.1); border-color: rgba(45,200,120,0.15); color: #4ade80; }
-        .export-section .import-btn:hover { background: rgba(45,200,120,0.2); border-color: rgba(45,200,120,0.25); color: #fff; }
+        .export-section .export-btn { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+        .export-section .export-btn:hover { background: var(--accent); color: #fff; }
+        .export-section .import-btn { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+        .export-section .import-btn:hover { background: var(--success); color: #fff; }
         #importFileInput { display: none; }
 
-        /* ===== 消息区域 ===== */
         .messages { flex: 1; overflow-y: auto; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .messages::-webkit-scrollbar { width: 3px; }
         .messages::-webkit-scrollbar-track { background: transparent; }
-        .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        .messages::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-        .welcome { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px 24px 40px; color: #666688; animation: fadeUp 0.5s ease-out; }
-        .welcome .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,rgba(79,140,255,0.15),rgba(124,92,252,0.15)); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.06); }
+        .welcome { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px 24px 40px; color: var(--text-muted); animation: fadeUp 0.5s ease-out; }
+        .welcome .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: var(--accent-bg); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid var(--border-color); }
         .welcome .icon-wrap svg { width: 44px; height: 44px; }
-        .welcome h2 { font-size: 20px; font-weight: 600; color: #e0e0f0; margin-bottom: 6px; }
-        .welcome p { font-size: 14px; line-height: 1.6; color: #8888aa; max-width: 280px; }
+        .welcome h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+        .welcome p { font-size: 14px; line-height: 1.6; color: var(--text-muted); max-width: 280px; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
         .message { display: flex; flex-direction: column; max-width: 92%; animation: fadeUp 0.25s ease-out; gap: 2px; }
         .message.user { align-self: flex-end; align-items: flex-end; }
         .message.agent { align-self: flex-start; align-items: flex-start; }
         .message.divider { align-self: center; max-width: 100%; margin: 6px 0 2px; }
-        .msg-header { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8888aa; padding: 0 4px 2px 4px; }
-        .msg-header .avatar { width: 22px; height: 22px; border-radius: 50%; background: rgba(79,140,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid rgba(255,255,255,0.04); flex-shrink: 0; }
-        .msg-header .name { font-weight: 500; color: #c0c0e0; }
-        .msg-header .time { font-size: 10px; color: #555577; margin-left: 2px; }
+        .msg-header { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); padding: 0 4px 2px 4px; }
+        .msg-header .avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-bg); display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid var(--border-color); flex-shrink: 0; }
+        .msg-header .name { font-weight: 500; color: var(--text-secondary); }
+        .msg-header .time { font-size: 10px; color: var(--text-muted); margin-left: 2px; }
         .bubble { padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; word-break: break-word; position: relative; }
-        .message.user .bubble { background: #2d7dff; color: #fff; border-bottom-right-radius: 4px; }
-        .message.agent .bubble { background: #1a1a2e; color: #e8e8f0; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
-        .message.divider .bubble { background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.08); border-radius: 20px; color: #8888aa; font-size: 13px; padding: 4px 16px; text-align: center; }
-        .cursor-blink { display: inline-block; width: 2px; height: 1em; background: #a0a0d0; margin-left: 2px; vertical-align: text-bottom; animation: blink 0.9s step-end infinite; }
+        .message.user .bubble { background: var(--bubble-user); color: #fff; border-bottom-right-radius: 4px; }
+        .message.agent .bubble { background: var(--bubble-assistant); color: var(--text-primary); border-bottom-left-radius: 4px; border: 1px solid var(--bubble-assistant-border); }
+        .message.divider .bubble { background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 20px; color: var(--text-muted); font-size: 13px; padding: 4px 16px; text-align: center; }
+        .cursor-blink { display: inline-block; width: 2px; height: 1em; background: var(--text-secondary); margin-left: 2px; vertical-align: text-bottom; animation: blink 0.9s step-end infinite; }
         @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0; } }
-        .bubble pre { background: rgba(0,0,0,0.4); padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 4px 0; font-size: 13px; font-family: "JetBrains Mono","Fira Code",monospace; border: 1px solid rgba(255,255,255,0.06); }
-        .bubble code { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; font-size: 14px; font-family: "JetBrains Mono","Fira Code",monospace; }
+        .bubble pre { background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 4px 0; font-size: 13px; font-family: "JetBrains Mono","Fira Code",monospace; border: 1px solid var(--border-color); }
+        .bubble code { background: rgba(0,0,0,0.1); padding: 1px 6px; border-radius: 4px; font-size: 14px; font-family: "JetBrains Mono","Fira Code",monospace; }
         .bubble pre code { background: transparent; padding: 0; font-size: 13px; }
         .bubble p { margin-bottom: 4px; }
         .bubble p:last-child { margin-bottom: 0; }
-        .error-bubble { background: rgba(255,60,60,0.15) !important; border-color: rgba(255,60,60,0.25) !important; color: #ff7a7a !important; }
+        .error-bubble { background: var(--danger-bg) !important; border-color: var(--danger) !important; color: var(--danger) !important; }
         .interrupted-bubble { background: rgba(255,200,0,0.1) !important; border-color: rgba(255,200,0,0.2) !important; color: #ffd966 !important; }
-        .silent-bubble { background: rgba(100,100,140,0.08) !important; border-color: rgba(255,255,255,0.05) !important; color: #8888aa !important; font-style: italic; }
+        .silent-bubble { background: var(--bg-card) !important; border-color: var(--border-color) !important; color: var(--text-muted) !important; font-style: italic; }
 
-        /* ===== 底部输入 ===== */
-        .input-area { background: rgba(13,13,26,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; display: flex; flex-direction: column; padding: 6px 12px 12px; }
+        .input-area { background: var(--input-area-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); flex-shrink: 0; display: flex; flex-direction: column; padding: 6px 12px 12px; transition: background 0.3s, border-color 0.3s; }
         .input-toolbar { display: flex; align-items: center; gap: 6px; padding: 2px 2px 6px 2px; flex-wrap: wrap; }
         .input-toolbar .spacer { flex: 1; }
         .at-selector { position: relative; display: inline-block; }
-        .at-selector .at-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #c0c0e0; padding: 2px 12px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
-        .at-selector .at-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .at-selector .at-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 2px 12px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
+        .at-selector .at-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
         .at-selector .at-btn .arrow { font-size: 11px; transition: transform 0.25s; }
         .at-selector .at-btn .arrow.open { transform: rotate(180deg); }
-        .at-selector .at-dropdown { position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 180px; background: #1a1a2e; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 -8px 40px rgba(0,0,0,0.6); padding: 4px 0; max-height: 200px; overflow-y: auto; z-index: 20; display: none; backdrop-filter: blur(10px); }
+        .at-selector .at-dropdown { position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 180px; background: var(--modal-bg); border-radius: 14px; border: 1px solid var(--border-color); box-shadow: 0 -8px 40px var(--shadow-color); padding: 4px 0; max-height: 200px; overflow-y: auto; z-index: 20; display: none; backdrop-filter: blur(10px); }
         .at-selector .at-dropdown.open { display: block; }
-        .at-selector .at-dropdown-item { padding: 8px 14px; font-size: 14px; color: #d0d0e8; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); user-select: none; }
+        .at-selector .at-dropdown-item { padding: 8px 14px; font-size: 14px; color: var(--text-primary); cursor: pointer; transition: background 0.15s; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); user-select: none; }
         .at-selector .at-dropdown-item:last-child { border-bottom: none; }
-        .at-selector .at-dropdown-item:hover { background: rgba(255,255,255,0.06); }
-        .at-selector .at-dropdown-item .check { margin-left: auto; opacity: 0; font-size: 14px; transition: opacity 0.15s; }
-        .at-selector .at-dropdown-item .check.checked { opacity: 1; color: #4f8cff; }
+        .at-selector .at-dropdown-item:hover { background: var(--bg-hover); }
+        .at-selector .at-dropdown-item .check { margin-left: auto; opacity: 0; font-size: 16px; font-weight: 700; transition: opacity 0.15s; }
+        .at-selector .at-dropdown-item .check.checked { opacity: 1; color: var(--accent); }
         .at-selector .at-dropdown-item .at-avatar { font-size: 16px; }
 
-        .input-toolbar .group-btn { background: rgba(79,140,255,0.1); border: 1px solid rgba(79,140,255,0.15); color: #8ab4ff; padding: 2px 14px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
-        .input-toolbar .group-btn:hover { background: rgba(79,140,255,0.2); color: #fff; }
-        .input-toolbar .group-btn.active { background: rgba(124,92,252,0.2); border-color: rgba(124,92,252,0.3); color: #c8b0ff; }
+        .input-toolbar .group-btn { background: var(--accent-bg); border: 1px solid var(--accent); color: var(--accent); padding: 2px 14px 2px 10px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
+        .input-toolbar .group-btn:hover { background: var(--accent); color: #fff; }
+        .input-toolbar .group-btn.active { background: var(--accent); color: #fff; }
         .input-toolbar .debate-btn { background: rgba(124,92,252,0.15); border: 1px solid rgba(124,92,252,0.2); color: #b8a0ff; padding: 2px 14px 2px 12px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; height: 30px; white-space: nowrap; }
         .input-toolbar .debate-btn:hover { background: rgba(124,92,252,0.25); color: #fff; }
         .input-toolbar .debate-btn:active { transform: scale(0.95); }
         .input-toolbar .debate-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .input-toolbar .file-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #a0a0c0; width: 30px; height: 30px; border-radius: 50%; font-size: 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .input-toolbar .file-btn:hover { background: rgba(255,255,255,0.12); color: #e8e8f0; }
+        .input-toolbar .file-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); width: 30px; height: 30px; border-radius: 50%; font-size: 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .input-toolbar .file-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
         .input-toolbar .file-btn:active { transform: scale(0.92); }
         #fileInput { display: none; }
 
-        /* 附件列表 */
-        .file-tip { background: rgba(22,22,42,0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 6px 8px; margin: 4px 0 4px 0; display: none; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; flex-shrink: 0; }
+        .file-tip { background: var(--modal-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-radius: 12px; padding: 6px 8px; margin: 4px 0 4px 0; display: none; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; flex-shrink: 0; }
         .file-tip.show { display: flex; }
-        .file-tip .file-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 4px 8px 4px 6px; border: 1px solid rgba(255,255,255,0.06); }
+        .file-tip .file-item { display: flex; align-items: center; gap: 6px; background: var(--bg-card); border-radius: 8px; padding: 4px 8px 4px 6px; border: 1px solid var(--border-color); }
         .file-tip .file-item .preview { display: flex; align-items: center; gap: 4px; }
         .file-tip .file-item .preview img { max-height: 28px; max-width: 28px; border-radius: 4px; object-fit: cover; }
         .file-tip .file-item .preview .file-icon { font-size: 18px; }
-        .file-tip .file-item .file-name { font-size: 12px; color: #c0c0e0; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .file-tip .file-item .remove-attachment { background: transparent; border: none; color: #8888aa; font-size: 14px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; }
-        .file-tip .file-item .remove-attachment:hover { background: rgba(255,255,255,0.08); color: #ff6b6b; }
+        .file-tip .file-item .file-name { font-size: 12px; color: var(--text-secondary); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-tip .file-item .remove-attachment { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; }
+        .file-tip .file-item .remove-attachment:hover { background: var(--bg-hover); color: var(--danger); }
 
-        .input-area .input-wrap { flex: 1; background: #1a1a2e; border-radius: 22px; padding: 2px 10px 2px 14px; border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.25s; display: flex; align-items: flex-end; gap: 4px; margin-top: 2px; }
-        .input-area .input-wrap:focus-within { border-color: rgba(45,125,255,0.5); }
-        .input-area textarea { flex: 1; background: transparent; border: none; outline: none; color: #e8e8f0; font-size: 15px; font-family: inherit; resize: none; padding: 8px 0; min-height: 22px; max-height: 100px; line-height: 1.5; }
-        .input-area textarea::placeholder { color: #666688; }
-        .input-area .send-btn { background: #2d7dff; border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        .input-area .send-btn:hover { background: #3d8dff; transform: scale(1.02); }
+        .input-area .input-wrap { flex: 1; background: var(--bg-input); border-radius: 22px; padding: 2px 10px 2px 14px; border: 1px solid var(--bg-input-border); transition: border-color 0.25s; display: flex; align-items: flex-end; gap: 4px; margin-top: 2px; }
+        .input-area .input-wrap:focus-within { border-color: var(--accent); }
+        .input-area textarea { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-size: 15px; font-family: inherit; resize: none; padding: 8px 0; min-height: 22px; max-height: 100px; line-height: 1.5; }
+        .input-area textarea::placeholder { color: var(--text-muted); }
+        .input-area .send-btn { background: var(--accent); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .input-area .send-btn:hover { background: var(--accent-hover); transform: scale(1.02); }
         .input-area .send-btn:active { transform: scale(0.92); }
-        .input-area .send-btn:disabled { background: #3a3a5a; color: #666688; cursor: not-allowed; transform: none; }
-        .input-area .send-btn.stop-btn { background: #ff4d4d; }
-        .input-area .send-btn.stop-btn:hover { background: #ff6666; }
+        .input-area .send-btn:disabled { background: var(--bg-card); color: var(--text-muted); cursor: not-allowed; transform: none; }
+        .input-area .send-btn.stop-btn { background: var(--danger); }
+        .input-area .send-btn.stop-btn:hover { background: var(--danger); }
 
-        /* ===== 配置中心（全屏） ===== */
-        .config-center { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0d0d1a; z-index: 500; display: none; flex-direction: column; }
+        .config-center { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--config-bg); z-index: 500; display: none; flex-direction: column; transition: background 0.3s; }
         .config-center.open { display: flex; }
-        .config-center .config-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(13,13,26,0.95); backdrop-filter: blur(12px); flex-shrink: 0; }
-        .config-center .config-header .back-btn { background: transparent; border: none; color: #a0a0c0; font-size: 24px; cursor: pointer; padding: 4px 8px; transition: all 0.2s; }
-        .config-center .config-header .back-btn:hover { color: #fff; }
-        .config-center .config-header .title { font-size: 18px; font-weight: 600; margin-left: 8px; color: #e8e8f0; flex: 1; }
+        .config-center .config-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: var(--header-bg); backdrop-filter: blur(12px); flex-shrink: 0; }
+        .config-center .config-header .back-btn { background: transparent; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; padding: 4px 8px; transition: all 0.2s; }
+        .config-center .config-header .back-btn:hover { color: var(--text-primary); }
+        .config-center .config-header .title { font-size: 15px; font-weight: 600; margin-left: 8px; color: var(--text-primary); flex: 1; }
         .config-center .config-body { flex: 1; overflow-y: auto; padding: 12px 16px 20px; }
 
-        .config-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px; margin-bottom: 2px; background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; width: 100%; }
-        .config-menu-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.06); }
+        .config-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px; margin-bottom: 2px; background: var(--config-item-bg); border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid var(--config-item-border); width: 100%; }
+        .config-menu-item:hover { background: var(--config-item-hover); border-color: var(--border-color); }
         .config-menu-item .left { display: flex; align-items: center; gap: 12px; }
         .config-menu-item .left .icon { font-size: 22px; width: 36px; text-align: center; }
-        .config-menu-item .left .label { font-size: 16px; font-weight: 500; color: #e8e8f0; }
-        .config-menu-item .left .desc { font-size: 12px; color: #666688; }
-        .config-menu-item .arrow { color: #555577; font-size: 18px; }
+        .config-menu-item .left .label { font-size: 16px; font-weight: 500; color: var(--text-primary); }
+        .config-menu-item .left .desc { font-size: 12px; color: var(--text-muted); }
+        .config-menu-item .arrow { color: var(--text-muted); font-size: 18px; }
 
-        /* 子页面列表 */
+        .config-subpage .sub-header { display: none; }
         .config-subpage { display: none; flex-direction: column; height: 100%; }
         .config-subpage.active { display: flex; }
-        .config-subpage .sub-header { display: flex; align-items: center; padding: 8px 0 12px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-        .config-subpage .sub-header .sub-title { font-size: 17px; font-weight: 600; color: #e8e8f0; }
         .config-subpage .sub-body { flex: 1; overflow-y: auto; padding: 12px 0 20px; }
 
-        .config-list-item { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; transition: all 0.2s; }
-        .config-list-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); }
+        .config-list-item { background: var(--config-item-bg); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; transition: all 0.2s; }
+        .config-list-item:hover { background: var(--config-item-hover); border-color: var(--accent); }
         .config-list-item .info { flex: 1; min-width: 0; }
-        .config-list-item .info .name { font-size: 14px; font-weight: 500; color: #e8e8f0; }
-        .config-list-item .info .detail { font-size: 12px; color: #666688; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .config-list-item .info .name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+        .config-list-item .info .detail { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .config-list-item .actions { display: flex; gap: 4px; flex-shrink: 0; }
-        .config-list-item .actions button { background: rgba(255,255,255,0.06); border: none; color: #8888aa; width: 30px; height: 30px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
-        .config-list-item .actions button:hover { background: rgba(255,255,255,0.12); color: #e8e8f0; }
-        .config-list-item .actions button.danger:hover { background: rgba(255,60,60,0.15); color: #ff6b6b; }
+        .config-list-item .actions button { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted); width: 30px; height: 30px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+        .config-list-item .actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .config-list-item .actions button.danger:hover { background: var(--danger-bg); color: var(--danger); }
 
-        .btn-primary { background: #2d7dff; border: none; color: #fff; padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; }
-        .btn-primary:hover { background: #3d8dff; transform: scale(1.02); }
+        .btn-primary { background: var(--accent); border: none; color: #fff; padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; }
+        .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
         .btn-primary:active { transform: scale(0.96); }
-        .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #a0a0c0; padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.12); color: #fff; }
-        .btn-danger { background: rgba(255,60,60,0.12); border: 1px solid rgba(255,60,60,0.15); color: #ff6b6b; padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
-        .btn-danger:hover { background: rgba(255,60,60,0.2); }
+        .btn-secondary { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
+        .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-danger { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); padding: 10px 0; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; width: 100%; }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
         .btn-row { display: flex; gap: 10px; margin-top: 8px; }
         .btn-row .btn-primary, .btn-row .btn-secondary, .btn-row .btn-danger { flex: 1; padding: 10px 0; }
 
-        .config-empty { text-align: center; color: #555577; padding: 30px 0; font-size: 14px; }
+        .config-empty { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 14px; }
 
-        /* ===== 浮窗（Modal） ===== */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-window { background: #16162a; border-radius: 24px; padding: 20px 18px 18px; max-width: 420px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 24px 80px rgba(0,0,0,0.6); transform: scale(0.95) translateY(10px); transition: transform 0.3s ease; overflow-y: auto; }
+        .modal-window { background: var(--modal-bg); border-radius: 24px; padding: 20px 18px 18px; max-width: 420px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--modal-border); box-shadow: 0 24px 80px var(--shadow-color); transform: scale(0.95) translateY(10px); transition: transform 0.3s ease; overflow-y: auto; }
         .modal-overlay.active .modal-window { transform: scale(1) translateY(0); }
-        .modal-window .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #e8e8f0; display: flex; align-items: center; gap: 8px; }
-        .modal-window .modal-close { background: transparent; border: none; color: #8888aa; font-size: 22px; cursor: pointer; margin-left: auto; padding: 0 4px; }
-        .modal-window .modal-close:hover { color: #fff; }
+        .modal-window .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+        .modal-window .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; margin-left: auto; padding: 0 4px; }
+        .modal-window .modal-close:hover { color: var(--text-primary); }
         .modal-window .modal-body { flex: 1; overflow-y: auto; padding: 4px 0; }
         .modal-window .modal-footer { display: flex; gap: 10px; margin-top: 16px; }
         .modal-window .modal-footer button { flex: 1; padding: 10px 0; border-radius: 12px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .modal-window .modal-footer .btn-save { background: #2d7dff; color: #fff; }
-        .modal-window .modal-footer .btn-save:hover { background: #3d8dff; }
-        .modal-window .modal-footer .btn-cancel { background: rgba(255,255,255,0.06); color: #a0a0c0; }
-        .modal-window .modal-footer .btn-cancel:hover { background: rgba(255,255,255,0.12); }
-        .modal-window .modal-footer .btn-delete { background: rgba(255,60,60,0.12); color: #ff6b6b; }
-        .modal-window .modal-footer .btn-delete:hover { background: rgba(255,60,60,0.2); }
+        .modal-window .modal-footer .btn-save { background: var(--accent); color: #fff; }
+        .modal-window .modal-footer .btn-save:hover { background: var(--accent-hover); }
+        .modal-window .modal-footer .btn-cancel { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .modal-window .modal-footer .btn-cancel:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .modal-window .modal-footer .btn-delete { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+        .modal-window .modal-footer .btn-delete:hover { background: var(--danger); color: #fff; }
         .modal-window .config-form-group { margin-bottom: 14px; }
-        .modal-window .config-form-group label { display: block; font-size: 13px; font-weight: 500; color: #a0a0c0; margin-bottom: 4px; }
+        .modal-window .config-form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
         .modal-window .config-form-group input, 
         .modal-window .config-form-group select, 
-        .modal-window .config-form-group textarea { width: 100%; padding: 8px 12px; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #e8e8f0; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.25s; }
+        .modal-window .config-form-group textarea { width: 100%; padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--bg-input-border); border-radius: 10px; color: var(--text-primary); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.25s; }
         .modal-window .config-form-group input:focus, 
         .modal-window .config-form-group select:focus, 
-        .modal-window .config-form-group textarea:focus { border-color: rgba(45,125,255,0.5); }
+        .modal-window .config-form-group textarea:focus { border-color: var(--accent); }
         .modal-window .config-form-group .model-multi-select { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
-        .modal-window .config-form-group .model-multi-select .model-option { display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: all 0.15s; font-size: 13px; }
-        .modal-window .config-form-group .model-multi-select .model-option:hover { background: rgba(255,255,255,0.08); }
-        .modal-window .config-form-group .model-multi-select .model-option.selected { background: rgba(79,140,255,0.15); border-color: rgba(79,140,255,0.3); color: #4f8cff; }
-        .modal-window .config-form-group .model-multi-select .model-option input[type="checkbox"] { accent-color: #4f8cff; width: 16px; height: 16px; cursor: pointer; }
+        .modal-window .config-form-group .model-multi-select .model-option { display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.15s; font-size: 13px; }
+        .modal-window .config-form-group .model-multi-select .model-option:hover { background: var(--bg-hover); }
+        .modal-window .config-form-group .model-multi-select .model-option.selected { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+        .modal-window .config-form-group .model-multi-select .model-option input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
         .modal-window .config-form-group .model-multi-select .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn { padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; background: rgba(79,140,255,0.12); border-color: rgba(79,140,255,0.2); color: #4f8cff; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn:hover { background: rgba(79,140,255,0.2); border-color: rgba(79,140,255,0.3); color: #fff; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.danger { background: rgba(255,60,60,0.1); border-color: rgba(255,60,60,0.15); color: #ff6b6b; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.danger:hover { background: rgba(255,60,60,0.2); border-color: rgba(255,60,60,0.25); color: #fff; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.accent { background: rgba(45,200,120,0.1); border-color: rgba(45,200,120,0.15); color: #4ade80; }
-        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.accent:hover { background: rgba(45,200,120,0.2); border-color: rgba(45,200,120,0.25); color: #fff; }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn { padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn:hover { background: var(--accent); color: #fff; }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.danger:hover { background: var(--danger); color: #fff; }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.accent { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+        .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn.accent:hover { background: var(--success); color: #fff; }
+        .modal-window .config-form-group .model-manual-add { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+        .modal-window .config-form-group .model-manual-add input { flex: 1; padding: 4px 8px; background: var(--bg-input); border: 1px solid var(--bg-input-border); border-radius: 8px; color: var(--text-primary); font-size: 13px; outline: none; }
+        .modal-window .config-form-group .model-manual-add input:focus { border-color: var(--accent); }
+        .modal-window .config-form-group .model-manual-add button { padding: 4px 14px; background: var(--accent-bg); border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); cursor: pointer; font-size: 13px; }
+        .modal-window .config-form-group .model-manual-add button:hover { background: var(--accent); color: #fff; }
 
-        /* ===== 非安全键盘的 API Key 输入框 ===== */
         .modal-window .config-form-group .api-key-row { display: flex; gap: 8px; align-items: center; }
         .modal-window .config-form-group .api-key-row input { flex: 1; }
-        .modal-window .config-form-group .api-key-row .toggle-key-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #a0a0c0; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
-        .modal-window .config-form-group .api-key-row .toggle-key-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .modal-window .config-form-group .api-key-row .toggle-key-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+        .modal-window .config-form-group .api-key-row .toggle-key-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-        /* 导出/导入选择浮窗 */
-        .export-select-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .export-select-item input[type="checkbox"] { accent-color: #4f8cff; width: 18px; height: 18px; cursor: pointer; }
+        .export-select-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-color); }
+        .export-select-item input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px; cursor: pointer; }
         .export-select-item label { cursor: pointer; flex: 1; }
-        .export-select-item .badge { font-size: 12px; color: #666688; margin-left: 8px; }
+        .export-select-item .badge { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
 
-        .toast-tip { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(22,22,42,0.95); color: #e8e8f0; padding: 10px 20px; border-radius: 12px; font-size: 13px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.06); z-index: 9999; box-shadow: 0 8px 40px rgba(0,0,0,0.5); max-width: 90%; text-align: center; animation: fadeUp 0.25s ease-out; }
+        .kb-search { display: flex; gap: 8px; margin-bottom: 10px; }
+        .kb-search input { flex: 1; padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--bg-input-border); border-radius: 10px; color: var(--text-primary); font-size: 14px; outline: none; }
+        .kb-search input:focus { border-color: var(--accent); }
+        .kb-search button { background: var(--accent); border: none; color: #fff; padding: 6px 14px; border-radius: 10px; cursor: pointer; }
+
+        .kb-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .kb-toolbar .btn-primary, .kb-toolbar .btn-secondary { flex: 1; margin-top: 0; }
+
+        .kb-folder-tree { background: var(--bg-card); border-radius: 12px; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); max-height: 150px; overflow-y: auto; }
+        .kb-folder-tree .folder-item { padding: 6px 10px; display: flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 6px; transition: 0.15s; }
+        .kb-folder-tree .folder-item:hover { background: var(--bg-hover); }
+        .kb-folder-tree .folder-item .folder-icon { font-size: 16px; }
+        .kb-folder-tree .folder-item .folder-name { flex: 1; font-size: 13px; color: var(--text-primary); }
+        .kb-folder-tree .folder-item .folder-count { font-size: 11px; color: var(--text-muted); }
+        .kb-folder-tree .folder-item .folder-actions { display: flex; gap: 4px; }
+        .kb-folder-tree .folder-item .folder-actions button { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; }
+        .kb-folder-tree .folder-item .folder-actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .kb-folder-tree .folder-item .folder-actions button.danger:hover { background: var(--danger-bg); color: var(--danger); }
+        .kb-folder-tree .folder-item.selected { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+
+        .kb-doc-item { background: var(--bg-card); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--border-color); position: relative; transition: background 0.15s; }
+        .kb-doc-item.long-press { background: var(--accent-bg); border-color: var(--accent); }
+        .kb-doc-item .doc-header { display: flex; align-items: center; gap: 8px; }
+        .kb-doc-item .doc-header .doc-icon { font-size: 20px; }
+        .kb-doc-item .doc-header .doc-title { font-weight: 500; color: var(--text-primary); flex: 1; }
+        .kb-doc-item .doc-header .doc-actions { display: flex; gap: 4px; }
+        .kb-doc-item .doc-header .doc-actions button { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; }
+        .kb-doc-item .doc-header .doc-actions button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .kb-doc-item .doc-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .kb-doc-item .doc-meta .tag { background: var(--accent-bg); color: var(--accent); padding: 0 8px; border-radius: 10px; font-size: 11px; }
+        .kb-doc-item .doc-preview { font-size: 13px; color: var(--text-secondary); margin-top: 6px; max-height: 40px; overflow: hidden; text-overflow: ellipsis; }
+
+        .toast-tip { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--toast-bg); color: var(--text-primary); padding: 10px 20px; border-radius: 12px; font-size: 13px; backdrop-filter: blur(10px); border: 1px solid var(--border-color); z-index: 9999; box-shadow: 0 8px 40px var(--shadow-color); max-width: 90%; text-align: center; animation: fadeUp 0.25s ease-out; }
 
         @media (max-width:430px) {
             .sidebar { max-width: 85vw; }
@@ -278,6 +374,7 @@
             .export-section .export-btn, .export-section .import-btn { font-size: 11px; padding: 5px 0; }
             .modal-window { padding: 16px; }
             .modal-window .config-form-group .model-multi-select .btn-group .select-all-btn { padding: 4px 12px; font-size: 12px; }
+            .kb-toolbar .btn-primary, .kb-toolbar .btn-secondary { font-size: 13px; padding: 8px 0; }
         }
         @media (min-width:431px) { .at-selector .at-dropdown { min-width: 200px; } }
     </style>
@@ -285,7 +382,6 @@
 <body>
 
 <div class="phone" id="app">
-    <!-- 顶部导航 -->
     <header class="header">
         <div class="header-left">
             <button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
@@ -293,22 +389,21 @@
         </div>
         <div class="header-right">
             <div class="header-actions">
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="切换主题">🌓</button>
                 <button class="new-chat-btn" id="newChatBtn">＋ 新建</button>
                 <button id="settingsBtn" title="配置中心">⚙</button>
             </div>
         </div>
     </header>
 
-    <!-- 消息列表 -->
     <div class="messages" id="messages">
         <div class="welcome" id="welcome">
             <div class="icon-wrap"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="url(#welcomeGrad)"/><path d="M18 42C18 32 24 28 32 28C40 28 46 32 46 42" stroke="white" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="22" r="3.5" fill="white"/><circle cx="38" cy="22" r="3.5" fill="white"/><path d="M32 17V13M32 17V21M32 17H28M32 17H36" stroke="white" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="welcomeGrad" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#4F8CFF"/><stop offset="100%" stop-color="#7C5CFC"/></linearGradient></defs></svg></div>
-            <h2>🤖 群聊 · 多附件</h2>
-            <p>点击「👥 群聊」进入自由发言模式，AI可自主选择是否回复</p>
+            <h2>🤖 群聊 · 知识库 Pro</h2>
+            <p>群聊模式：随机顺序，接力发言</p>
         </div>
     </div>
 
-    <!-- 底部输入 -->
     <div class="input-area" id="inputArea">
         <div class="input-toolbar">
             <div class="at-selector" id="atSelector">
@@ -321,10 +416,7 @@
             <input type="file" id="fileInput" multiple />
             <div class="spacer"></div>
         </div>
-
-        <!-- 附件列表 -->
         <div class="file-tip" id="fileTip"></div>
-
         <div class="input-wrap">
             <textarea id="inputBox" rows="1" placeholder="输入消息…" autofocus></textarea>
             <button class="send-btn" id="sendBtn" aria-label="发送">➤</button>
@@ -332,14 +424,12 @@
     </div>
 </div>
 
-<!-- 侧边栏（对话记录） -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header"><span class="brand">💬 对话记录</span><button class="sidebar-close" id="sidebarClose">✕</button></div>
     <div class="sidebar-scroll">
         <div class="sidebar-section-title">📂 历史对话 <button id="newChatSidebarBtn">＋ 新建</button></div>
         <div id="convList"></div>
-        <!-- 导出/导入同一行 -->
         <div class="export-section">
             <button class="export-btn" id="exportDataBtn">📤 导出</button>
             <button class="import-btn" id="importDataBtn">📥 导入</button>
@@ -348,78 +438,70 @@
     </div>
 </div>
 
-<!-- ===== 配置中心（全屏） ===== -->
 <div class="config-center" id="configCenter">
     <div class="config-header">
         <button class="back-btn" id="configCenterBack">‹</button>
         <span class="title" id="configCenterTitle">配置中心</span>
     </div>
     <div class="config-body" id="configBody">
-        <!-- 菜单列表 -->
         <div id="configMenu">
-            <div class="config-menu-item" data-page="api">
-                <div class="left"><span class="icon">🔌</span><div><div class="label">API 配置</div><div class="desc">管理 API 连接与模型</div></div></div>
-                <span class="arrow">›</span>
-            </div>
-            <div class="config-menu-item" data-page="agents">
-                <div class="left"><span class="icon">🤖</span><div><div class="label">AI 角色配置</div><div class="desc">管理 AI 角色与绑定</div></div></div>
-                <span class="arrow">›</span>
-            </div>
-            <div class="config-menu-item" data-page="mcp">
-                <div class="left"><span class="icon">🧩</span><div><div class="label">MCP</div><div class="desc">模型上下文协议（即将上线）</div></div></div>
-                <span class="arrow">›</span>
-            </div>
-            <div class="config-menu-item" data-page="skills">
-                <div class="left"><span class="icon">🛠️</span><div><div class="label">Skills</div><div class="desc">技能扩展（即将上线）</div></div></div>
-                <span class="arrow">›</span>
-            </div>
-            <div class="config-menu-item" data-page="knowledge">
-                <div class="left"><span class="icon">📚</span><div><div class="label">知识库</div><div class="desc">知识库管理（即将上线）</div></div></div>
-                <span class="arrow">›</span>
-            </div>
-            <div class="config-menu-item" data-page="plugins">
-                <div class="left"><span class="icon">🧩</span><div><div class="label">插件</div><div class="desc">插件扩展（即将上线）</div></div></div>
-                <span class="arrow">›</span>
-            </div>
+            <div class="config-menu-item" data-page="api"><div class="left"><span class="icon">🔌</span><div><div class="label">API 配置</div><div class="desc">管理 API 连接与模型</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="agents"><div class="left"><span class="icon">🤖</span><div><div class="label">AI 角色配置</div><div class="desc">管理 AI 角色与绑定</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="knowledge"><div class="left"><span class="icon">📚</span><div><div class="label">知识库</div><div class="desc">文件夹、标签、多格式文档、外部平台</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="platforms"><div class="left"><span class="icon">🌐</span><div><div class="label">外部平台</div><div class="desc">对接主流知识库 API</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="mcp"><div class="left"><span class="icon">🧩</span><div><div class="label">MCP</div><div class="desc">模型上下文协议（即将上线）</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="skills"><div class="left"><span class="icon">🛠️</span><div><div class="label">Skills</div><div class="desc">技能扩展（即将上线）</div></div></div><span class="arrow">›</span></div>
+            <div class="config-menu-item" data-page="plugins"><div class="left"><span class="icon">🧩</span><div><div class="label">插件</div><div class="desc">插件扩展（即将上线）</div></div></div><span class="arrow">›</span></div>
         </div>
 
-        <!-- 子页面：API 配置 -->
         <div class="config-subpage" id="subpage-api">
-            <div class="sub-header">
-                <span class="sub-title">API 配置</span>
-            </div>
             <div class="sub-body" id="apiConfigBody">
                 <div id="apiConfigList"></div>
                 <button class="btn-primary" id="apiAddBtn" style="margin-top:12px;">＋ 新增配置</button>
             </div>
         </div>
 
-        <!-- 子页面：AI 角色配置 -->
         <div class="config-subpage" id="subpage-agents">
-            <div class="sub-header">
-                <span class="sub-title">AI 角色配置</span>
-            </div>
             <div class="sub-body" id="agentConfigBody">
                 <div id="agentConfigList"></div>
                 <button class="btn-primary" id="agentAddBtn" style="margin-top:12px;">＋ 新增角色</button>
             </div>
         </div>
 
-        <!-- 占位页面 -->
-        <div class="config-subpage" id="subpage-mcp"><div class="sub-header"><span class="sub-title">MCP</span></div><div class="sub-body"><div class="config-empty">🧩 MCP 功能即将上线</div></div></div>
-        <div class="config-subpage" id="subpage-skills"><div class="sub-header"><span class="sub-title">Skills</span></div><div class="sub-body"><div class="config-empty">🛠️ Skills 功能即将上线</div></div></div>
-        <div class="config-subpage" id="subpage-knowledge"><div class="sub-header"><span class="sub-title">知识库</span></div><div class="sub-body"><div class="config-empty">📚 知识库功能即将上线</div></div></div>
-        <div class="config-subpage" id="subpage-plugins"><div class="sub-header"><span class="sub-title">插件</span></div><div class="sub-body"><div class="config-empty">🧩 插件功能即将上线</div></div></div>
+        <div class="config-subpage" id="subpage-knowledge">
+            <div class="sub-body" id="knowledgeBody">
+                <div class="kb-search">
+                    <input id="kbSearchInput" placeholder="搜索文档内容、标题、标签…" />
+                    <button id="kbSearchBtn">🔍</button>
+                </div>
+                <div class="kb-toolbar">
+                    <button class="btn-primary" id="kbAddDocBtn">＋ 添加文档</button>
+                    <button class="btn-secondary" id="kbUploadBtn">📤 上传文件</button>
+                    <button class="btn-secondary" id="kbAddFolderBtn">📁 新建文件夹</button>
+                </div>
+                <input type="file" id="kbFileInput" multiple accept=".txt,.md,.json,.csv,.log,.pdf,.docx,.xml,.html,.css,.js,.py,.java,.c,.cpp,.h,.sh,.bat,.ps1,.rb,.go,.rs,.swift,.kt,.dart" style="display:none;" />
+                <div class="kb-folder-tree" id="kbFolderTree"></div>
+                <div id="kbDocList"></div>
+            </div>
+        </div>
+
+        <div class="config-subpage" id="subpage-platforms">
+            <div class="sub-body">
+                <div style="margin-bottom:12px; color:var(--text-muted);">对接主流知识库平台，统一检索与引用</div>
+                <div id="platformList"></div>
+                <button class="btn-primary" id="platformAddBtn" style="margin-top:12px;">＋ 添加平台</button>
+            </div>
+        </div>
+
+        <div class="config-subpage" id="subpage-mcp"><div class="sub-body"><div class="config-empty">🧩 MCP 功能即将上线</div></div></div>
+        <div class="config-subpage" id="subpage-skills"><div class="sub-body"><div class="config-empty">🛠️ Skills 功能即将上线</div></div></div>
+        <div class="config-subpage" id="subpage-plugins"><div class="sub-body"><div class="config-empty">🧩 插件功能即将上线</div></div></div>
     </div>
 </div>
 
-<!-- ===== 模态浮窗（编辑 API / AI 角色 / 导出导入选择） ===== -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-window" id="modalWindow">
-        <div class="modal-title">
-            <span id="modalTitle">编辑</span>
-            <button class="modal-close" id="modalCloseBtn">✕</button>
-        </div>
+        <div class="modal-title"><span id="modalTitle">编辑</span><button class="modal-close" id="modalCloseBtn">✕</button></div>
         <div class="modal-body" id="modalBody"></div>
         <div class="modal-footer" id="modalFooter">
             <button class="btn-cancel" id="modalCancel">取消</button>
@@ -431,19 +513,22 @@
 
 <script>
     // ================================================================
-    //  配置中心最终优化版 - 单返回键 + 非安全键盘 + 美化按钮
+    //  群聊模式：随机排序 + 顺序接力发言；@ 菜单勾选标记
+    //  修复：
+    //    1) 配置中心返回键（history 状态与 UI 渲染解耦）
+    //    2) 模型校验误报（model 从 agent.model 取，而非 cfg.model）
     // ================================================================
 
     (function() {
         'use strict';
 
-        // ---------- DOM ----------
         const messagesEl = document.getElementById('messages');
         const inputBox = document.getElementById('inputBox');
         const sendBtn = document.getElementById('sendBtn');
         const debateBtn = document.getElementById('debateBtn');
         const groupBtn = document.getElementById('groupBtn');
         const settingsBtn = document.getElementById('settingsBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
         const welcomeEl = document.getElementById('welcome');
         const newChatBtn = document.getElementById('newChatBtn');
         const newChatSidebarBtn = document.getElementById('newChatSidebarBtn');
@@ -464,20 +549,25 @@
         const importFileInput = document.getElementById('importFileInput');
         const fileTip = document.getElementById('fileTip');
 
-        // 配置中心
         const configCenter = document.getElementById('configCenter');
         const configCenterBack = document.getElementById('configCenterBack');
         const configCenterTitle = document.getElementById('configCenterTitle');
         const configMenu = document.getElementById('configMenu');
         const configBody = document.getElementById('configBody');
 
-        // 子页面容器
         const apiConfigList = document.getElementById('apiConfigList');
         const agentConfigList = document.getElementById('agentConfigList');
+        const knowledgeList = document.getElementById('kbDocList');
+        const folderTree = document.getElementById('kbFolderTree');
+        const kbSearchInput = document.getElementById('kbSearchInput');
+        const kbSearchBtn = document.getElementById('kbSearchBtn');
+        const kbAddDocBtn = document.getElementById('kbAddDocBtn');
+        const kbUploadBtn = document.getElementById('kbUploadBtn');
+        const kbFileInput = document.getElementById('kbFileInput');
+        const kbAddFolderBtn = document.getElementById('kbAddFolderBtn');
         const apiAddBtn = document.getElementById('apiAddBtn');
         const agentAddBtn = document.getElementById('agentAddBtn');
 
-        // 模态浮窗
         const modalOverlay = document.getElementById('modalOverlay');
         const modalWindow = document.getElementById('modalWindow');
         const modalTitle = document.getElementById('modalTitle');
@@ -488,7 +578,6 @@
         const modalSave = document.getElementById('modalSave');
         const modalDelete = document.getElementById('modalDelete');
 
-        // ---------- 状态 ----------
         let isStreaming = false;
         let isDebating = false;
         let groupChatMode = false;
@@ -497,18 +586,20 @@
         let streamingMsgIds = new Set();
         let uploadedFiles = [];
 
-        // 当前编辑的ID（用于API或角色）
         let editingId = null;
-        let editingType = null; // 'api' or 'agent'
-        let modalCallback = null; // 用于导出导入选择后的回调
+        let editingType = null;
+        let modalCallback = null;
 
-        // ---------- 存储 ----------
         const STORAGE = {
             CONFIGS: 'ai_group_configs',
             CURRENT_CONFIG_ID: 'ai_group_current_config_id',
             AGENTS: 'ai_group_agents',
             CONVERSATIONS: 'ai_group_conversations',
             CURRENT_CONV_ID: 'ai_group_current_conv_id',
+            KNOWLEDGE: 'ai_group_knowledge_pro',
+            FOLDERS: 'ai_group_folders',
+            PLATFORMS: 'ai_group_platforms',
+            THEME: 'ai_group_theme',
         };
 
         let configs = [];
@@ -518,105 +609,108 @@
         let currentConvId = null;
         let messages = [];
 
-        // ---------- 初始化 ----------
+        let knowledge = [];
+        let folders = [];
+        let platforms = [];
+
+        function setTheme(theme) {
+            if (theme === 'light') { document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem(STORAGE.THEME, 'light'); } else { document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem(STORAGE.THEME, 'dark'); }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'light' ? 'dark' : 'light');
+        }
+
+        function loadTheme() {
+            const saved = localStorage.getItem(STORAGE.THEME);
+            if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+            else document.documentElement.removeAttribute('data-theme');
+        }
+
         function loadConfigs() {
-            try {
-                const data = localStorage.getItem(STORAGE.CONFIGS);
-                if (data) { configs = JSON.parse(data); } else { configs = []; }
-            } catch (_) { configs = []; }
+            try { const data = localStorage.getItem(STORAGE.CONFIGS); if (data) configs = JSON.parse(data); else configs = []; } catch (
+                _) { configs = []; }
             if (configs.length === 0) configs = [];
             let needSave = false;
-            for (const c of configs) {
-                if (c.maxTokens === undefined) { c.maxTokens = 4096; needSave = true; }
-                if (!c.models) { c.models = []; needSave = true; }
-            }
+            for (const c of configs) { if (c.maxTokens === undefined) { c.maxTokens = 4096;
+                    needSave = true; } if (!c.models) { c.models = [];
+                    needSave = true; } }
             if (needSave) saveConfigs();
-
-            try {
-                const id = localStorage.getItem(STORAGE.CURRENT_CONFIG_ID);
-                if (id && configs.some(c => c.id === id)) { currentConfigId = id; } else { currentConfigId = configs[0]?.id ||
-                        null; }
-            } catch (_) { currentConfigId = configs[0]?.id || null; }
+            try { const id = localStorage.getItem(STORAGE.CURRENT_CONFIG_ID); if (id && configs.some(c => c.id === id))
+                currentConfigId = id;
+                else currentConfigId = configs[0]?.id || null; } catch (_) { currentConfigId = configs[0]?.id || null; }
             if (!currentConfigId && configs.length > 0) currentConfigId = configs[0].id;
         }
 
         function saveConfigs() {
-            try {
-                localStorage.setItem(STORAGE.CONFIGS, JSON.stringify(configs));
-                if (currentConfigId) localStorage.setItem(STORAGE.CURRENT_CONFIG_ID, currentConfigId);
-            } catch (_) {}
+            try { localStorage.setItem(STORAGE.CONFIGS, JSON.stringify(configs)); if (currentConfigId) localStorage.setItem(
+                    STORAGE.CURRENT_CONFIG_ID, currentConfigId); } catch (_) {}
         }
 
         function loadAgents() {
-            try {
-                const data = localStorage.getItem(STORAGE.AGENTS);
-                if (data) { agents = JSON.parse(data); } else { agents = []; }
-            } catch (_) { agents = []; }
+            try { const data = localStorage.getItem(STORAGE.AGENTS); if (data) agents = JSON.parse(data); else agents = []; } catch (
+                _) { agents = []; }
             if (agents.length === 0) {
-                agents.push({
-                    id: 'agent_default',
-                    name: '小智',
-                    avatar: '🤖',
-                    configId: configs[0]?.id || null,
-                    model: configs[0]?.models?.[0] || '',
-                    prompt: '你是一个乐于助人的AI助手。',
-                    enabled: true,
-                });
-                agents.push({
-                    id: 'agent_creative',
-                    name: '小创',
-                    avatar: '🎨',
-                    configId: configs[0]?.id || null,
-                    model: configs[0]?.models?.[0] || '',
-                    prompt: '你是一个富有创意、天马行空的AI。',
-                    enabled: true,
-                });
+                agents.push({ id: 'agent_default', name: '小智', avatar: '🤖', configId: configs[0]?.id || null, model: configs[
+                        0]?.models?.[0] || '', prompt: '你是一个乐于助人的AI助手。', enabled: true });
+                agents.push({ id: 'agent_creative', name: '小创', avatar: '🎨', configId: configs[0]?.id || null, model: configs[
+                        0]?.models?.[0] || '', prompt: '你是一个富有创意、天马行空的AI。', enabled: true });
                 saveAgents();
             }
             let needSave = false;
             for (const a of agents) {
-                if (!configs.some(c => c.id === a.configId)) {
-                    a.configId = configs[0]?.id || null;
-                    needSave = true;
-                }
+                if (!configs.some(c => c.id === a.configId)) { a.configId = configs[0]?.id || null;
+                    needSave = true; }
                 const cfg = configs.find(c => c.id === a.configId);
-                if (cfg && a.model && !cfg.models.includes(a.model)) {
-                    a.model = cfg.models[0] || '';
-                    needSave = true;
-                }
+                if (cfg && a.model && !cfg.models.includes(a.model)) { a.model = cfg.models[0] || '';
+                    needSave = true; }
             }
             if (needSave) saveAgents();
         }
 
-        function saveAgents() {
-            try { localStorage.setItem(STORAGE.AGENTS, JSON.stringify(agents)); } catch (_) {}
+        function saveAgents() { try { localStorage.setItem(STORAGE.AGENTS, JSON.stringify(agents)); } catch (_) {} }
+
+        function loadFolders() {
+            try { const data = localStorage.getItem(STORAGE.FOLDERS); if (data) folders = JSON.parse(data); else folders = []; } catch (
+                _) { folders = []; }
         }
 
+        function saveFolders() { try { localStorage.setItem(STORAGE.FOLDERS, JSON.stringify(folders)); } catch (_) {} }
+
+        function loadKnowledge() {
+            try { const data = localStorage.getItem(STORAGE.KNOWLEDGE); if (data) knowledge = JSON.parse(data); else knowledge = []; } catch (
+                _) { knowledge = []; }
+        }
+
+        function saveKnowledge() { try { localStorage.setItem(STORAGE.KNOWLEDGE, JSON.stringify(knowledge)); } catch (_) {} }
+
+        function loadPlatforms() {
+            try { const data = localStorage.getItem(STORAGE.PLATFORMS); if (data) platforms = JSON.parse(data); else platforms = []; } catch (
+                _) { platforms = []; }
+        }
+
+        function savePlatforms() { try { localStorage.setItem(STORAGE.PLATFORMS, JSON.stringify(platforms)); } catch (_) {} }
+
         function loadConversations() {
-            try {
-                const data = localStorage.getItem(STORAGE.CONVERSATIONS);
-                if (data) { conversations = JSON.parse(data); } else { conversations = []; }
-            } catch (_) { conversations = []; }
-            if (conversations.length === 0) {
-                const conv = { id: 'conv_default', title: '新对话', messages: [], createdAt: Date.now(), updatedAt: Date
-                    .now() };
+            try { const data = localStorage.getItem(STORAGE.CONVERSATIONS); if (data) conversations = JSON.parse(data); else
+                    conversations = []; } catch (_) { conversations = []; }
+            if (conversations.length === 0) { const conv = { id: 'conv_default', title: '新对话', messages: [],
+                    createdAt: Date.now(), updatedAt: Date.now() };
                 conversations.push(conv);
-                saveConversations();
-            }
-            try {
-                const id = localStorage.getItem(STORAGE.CURRENT_CONV_ID);
-                if (id && conversations.some(c => c.id === id)) { currentConvId = id; } else { currentConvId = conversations[
-                        0]?.id || null; }
-            } catch (_) { currentConvId = conversations[0]?.id || null; }
+                saveConversations(); }
+            try { const id = localStorage.getItem(STORAGE.CURRENT_CONV_ID); if (id && conversations.some(c => c.id === id))
+                currentConvId = id;
+                else currentConvId = conversations[0]?.id || null; } catch (_) { currentConvId = conversations[0]?.id || null; }
             if (!currentConvId && conversations.length > 0) currentConvId = conversations[0].id;
             loadCurrentConvMessages();
         }
 
         function saveConversations() {
-            try {
-                localStorage.setItem(STORAGE.CONVERSATIONS, JSON.stringify(conversations));
-                if (currentConvId) localStorage.setItem(STORAGE.CURRENT_CONV_ID, currentConvId);
-            } catch (_) {}
+            try { localStorage.setItem(STORAGE.CONVERSATIONS, JSON.stringify(conversations)); if (currentConvId) localStorage
+                    .setItem(STORAGE.CURRENT_CONV_ID, currentConvId); } catch (_) {}
         }
 
         function loadCurrentConvMessages() {
@@ -626,9 +720,7 @@
             renderMessages();
         }
 
-        function getCurrentConv() {
-            return conversations.find(c => c.id === currentConvId) || null;
-        }
+        function getCurrentConv() { return conversations.find(c => c.id === currentConvId) || null; }
 
         function saveCurrentConversation() {
             const conv = getCurrentConv();
@@ -636,23 +728,14 @@
             conv.messages = messages.slice();
             conv.updatedAt = Date.now();
             const firstUser = messages.find(m => m.role === 'user');
-            if (firstUser) {
-                const title = firstUser.content.slice(0, 20) + (firstUser.content.length > 20 ? '…' : '');
-                conv.title = title || '新对话';
-            } else {
-                conv.title = '空对话';
-            }
+            if (firstUser) { const title = firstUser.content.slice(0, 20) + (firstUser.content.length > 20 ? '…' : '');
+                conv.title = title || '新对话'; } else { conv.title = '空对话'; }
             saveConversations();
         }
 
         function createNewConversation() {
-            const conv = {
-                id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-                title: '新对话',
-                messages: [],
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-            };
+            const conv = { id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), title: '新对话',
+                messages: [], createdAt: Date.now(), updatedAt: Date.now() };
             conversations.unshift(conv);
             currentConvId = conv.id;
             messages = [];
@@ -687,19 +770,13 @@
             conversations.splice(idx, 1);
             if (currentConvId === id) {
                 currentConvId = conversations[0]?.id || null;
-                if (currentConvId) {
-                    const conv = conversations.find(c => c.id === currentConvId);
-                    messages = conv ? conv.messages || [] : [];
-                } else {
-                    messages = [];
-                    if (conversations.length === 0) {
-                        const newConv = { id: 'conv_' + Date.now(), title: '新对话', messages: [], createdAt: Date.now(),
+                if (currentConvId) { const conv = conversations.find(c => c.id === currentConvId);
+                    messages = conv ? conv.messages || [] : []; } else { messages = []; if (conversations.length === 0) { const
+                            newConv = { id: 'conv_' + Date.now(), title: '新对话', messages: [], createdAt: Date.now(),
                             updatedAt: Date.now() };
                         conversations.push(newConv);
                         currentConvId = newConv.id;
-                        messages = [];
-                    }
-                }
+                        messages = []; } }
             }
             saveConversations();
             renderConversationList();
@@ -711,16 +788,13 @@
             const conv = conversations.find(c => c.id === id);
             if (!conv) return;
             const newTitle = prompt('输入新的对话标题：', conv.title);
-            if (newTitle !== null && newTitle.trim() !== '') {
-                conv.title = newTitle.trim();
+            if (newTitle !== null && newTitle.trim() !== '') { conv.title = newTitle.trim();
                 conv.updatedAt = Date.now();
                 saveConversations();
                 renderConversationList();
-                showToast('✅ 已重命名');
-            }
+                showToast('✅ 已重命名'); }
         }
 
-        // ---------- 渲染消息 ----------
         function renderMessages() {
             const children = messagesEl.querySelectorAll('.message');
             children.forEach(el => el.remove());
@@ -741,9 +815,7 @@
             if (msg.role !== 'divider') {
                 const header = document.createElement('div');
                 header.className = 'msg-header';
-                if (msg.role === 'user') {
-                    header.innerHTML = `<span class="avatar">👤</span><span class="name">你</span>`;
-                } else {
+                if (msg.role === 'user') { header.innerHTML = `<span class="avatar">👤</span><span class="name">你</span>`; } else {
                     const agent = agents.find(a => a.id === msg.agentId);
                     const avatar = agent?.avatar || '🤖';
                     const name = agent?.name || 'AI';
@@ -758,11 +830,8 @@
             if (msg.interrupted) bubble.classList.add('interrupted-bubble');
             if (msg.silent) bubble.classList.add('silent-bubble');
 
-            if (msg.role === 'divider') {
-                bubble.textContent = msg.content || '─── 阶段 ───';
-            } else {
-                bubble.innerHTML = formatContent(msg.content || '');
-            }
+            if (msg.role === 'divider') { bubble.textContent = msg.content || '─── 阶段 ───'; } else { bubble.innerHTML =
+                    formatContent(msg.content || ''); }
             div.appendChild(bubble);
 
             if (isStreamingMsg && msg.role !== 'divider') {
@@ -840,9 +909,7 @@
         let autoScroll = true;
 
         function scrollToBottomIfNeeded() {
-            if (autoScroll) {
-                requestAnimationFrame(() => { messagesEl.scrollTop = messagesEl.scrollHeight; });
-            }
+            if (autoScroll) { requestAnimationFrame(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }); }
         }
 
         messagesEl.addEventListener('scroll', () => {
@@ -851,30 +918,30 @@
             autoScroll = atBottom;
         });
 
-        // ---------- 渲染对话列表 ----------
-        function renderConversationList() {
-            if (conversations.length === 0) {
-                convListEl.innerHTML = `<div class="conv-empty">暂无对话</div>`;
-                return;
+        // 打乱数组（Fisher-Yates）
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
             }
+            return a;
+        }
+
+        function renderConversationList() {
+            if (conversations.length === 0) { convListEl.innerHTML = `<div class="conv-empty">暂无对话</div>`; return; }
             let html = '';
             for (const conv of conversations) {
                 const active = conv.id === currentConvId ? 'active' : '';
                 const title = conv.title || '新对话';
                 const count = conv.messages ? conv.messages.length : 0;
                 const time = new Date(conv.updatedAt || conv.createdAt);
-                const timeStr = time.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) +
-                    ' ' + time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                const timeStr = time.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) + ' ' + time
+                .toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
                 html += `
                     <div class="conv-item ${active}" data-id="${conv.id}">
-                        <div class="conv-info">
-                            <div class="conv-title">${escapeHtml(title)}</div>
-                            <div class="conv-meta">${timeStr} · ${count} 条</div>
-                        </div>
-                        <div class="conv-actions">
-                            <button class="rename-btn" data-id="${conv.id}" title="重命名">✎</button>
-                            <button class="delete-btn" data-id="${conv.id}" title="删除">✕</button>
-                        </div>
+                        <div class="conv-info"><div class="conv-title">${escapeHtml(title)}</div><div class="conv-meta">${timeStr} · ${count} 条</div></div>
+                        <div class="conv-actions"><button class="rename-btn" data-id="${conv.id}" title="重命名">✎</button><button class="delete-btn" data-id="${conv.id}" title="删除">✕</button></div>
                     </div>
                 `;
             }
@@ -887,33 +954,34 @@
                 });
                 const renameBtn = item.querySelector('.rename-btn');
                 if (renameBtn) {
-                    renameBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        renameConversation(item.dataset.id);
-                    });
+                    renameBtn.addEventListener('click', (e) => { e.stopPropagation();
+                        renameConversation(item.dataset.id); });
                 }
                 const delBtn = item.querySelector('.delete-btn');
                 if (delBtn) {
-                    delBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteConversation(item.dataset.id);
-                    });
+                    delBtn.addEventListener('click', (e) => { e.stopPropagation();
+                        deleteConversation(item.dataset.id); });
                 }
             });
         }
 
-        // ---------- @下拉菜单 ----------
+        // ===== @下拉菜单：勾选标记 =====
         function renderAtDropdown() {
             const enabled = getEnabledAgents();
-            let html =
-                `<div class="at-dropdown-item ${atTargets.length === 0 ? 'active' : ''}" data-id="__all"><span>🌐 全部</span><span class="check">✓</span></div>`;
+            const allChecked = atTargets.length === 0;
+            let html = `
+                <div class="at-dropdown-item ${allChecked ? 'active' : ''}" data-id="__all">
+                    <span>🌐 全部</span>
+                    <span class="check ${allChecked ? 'checked' : ''}">✓</span>
+                </div>
+            `;
             for (const agent of enabled) {
                 const checked = atTargets.includes(agent.id);
                 html += `
                     <div class="at-dropdown-item ${checked ? 'active' : ''}" data-id="${agent.id}">
                         <span class="at-avatar">${agent.avatar || '🤖'}</span>
                         <span>${escapeHtml(agent.name)}</span>
-                        <span class="check">✓</span>
+                        <span class="check ${checked ? 'checked' : ''}">✓</span>
                     </div>`;
             }
             atDropdown.innerHTML = html;
@@ -969,26 +1037,20 @@
             div.className = 'toast-tip';
             div.textContent = msg;
             document.body.appendChild(div);
-            setTimeout(() => {
-                div.style.opacity = '0';
+            setTimeout(() => { div.style.opacity = '0';
                 div.style.transition = 'opacity 0.3s';
-                setTimeout(() => div.remove(), 400);
-            }, 2500);
+                setTimeout(() => div.remove(), 400); }, 2500);
         }
 
         function setInputEnabled(enabled) {
             inputBox.disabled = !enabled;
-            if (!enabled) {
-                sendBtn.classList.add('stop-btn');
+            if (!enabled) { sendBtn.classList.add('stop-btn');
                 sendBtn.textContent = '⏹';
                 sendBtn.disabled = false;
-                sendBtn.title = '停止生成';
-            } else {
-                sendBtn.classList.remove('stop-btn');
+                sendBtn.title = '停止生成'; } else { sendBtn.classList.remove('stop-btn');
                 sendBtn.textContent = '➤';
                 sendBtn.disabled = false;
-                sendBtn.title = '发送';
-            }
+                sendBtn.title = '发送'; }
         }
 
         function autoResize() {
@@ -1003,40 +1065,35 @@
             }, 300);
         });
 
-        // ---------- 群聊模式 ----------
         function toggleGroupMode() {
             groupChatMode = !groupChatMode;
             groupBtn.classList.toggle('active', groupChatMode);
             groupBtn.textContent = groupChatMode ? '👥 群聊 ON' : '👥 群聊';
-            showToast(groupChatMode ? '✅ 群聊模式已开启，AI将自由选择是否回复' : '❌ 群聊模式已关闭');
+            showToast(groupChatMode ? '✅ 群聊模式已开启：随机顺序，接力发言' : '❌ 群聊模式已关闭');
         }
 
-        // ---------- 导出/导入（多选） ----------
         function showExportModal() {
-            // 构建选择列表
-            let html = `<div style="margin-bottom:12px; color:#8888aa;">选择要导出的内容：</div>`;
+            let html = `<div style="margin-bottom:12px; color:var(--text-muted);">选择要导出的内容：</div>`;
             html += `<div style="margin-bottom:8px; font-weight:500;">API 配置</div>`;
-            if (configs.length === 0) html += `<div style="color:#555577; padding-left:10px;">暂无配置</div>`;
-            else {
-                for (const c of configs) {
-                    html += `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="config" value="${c.id}" checked /><label>${escapeHtml(c.name)}</label></div>`;
-                }
-            }
+            if (configs.length === 0) html += `<div style="color:var(--text-muted); padding-left:10px;">暂无配置</div>`;
+            else { for (const c of configs) { html +=
+                        `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="config" value="${c.id}" checked /><label>${escapeHtml(c.name)}</label></div>`; } }
             html += `<div style="margin:8px 0; font-weight:500;">AI 角色</div>`;
-            if (agents.length === 0) html += `<div style="color:#555577; padding-left:10px;">暂无角色</div>`;
-            else {
-                for (const a of agents) {
-                    html += `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="agent" value="${a.id}" checked /><label>${a.avatar || '🤖'} ${escapeHtml(a.name)}</label></div>`;
-                }
-            }
+            if (agents.length === 0) html += `<div style="color:var(--text-muted); padding-left:10px;">暂无角色</div>`;
+            else { for (const a of agents) { html +=
+                        `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="agent" value="${a.id}" checked /><label>${a.avatar || '🤖'} ${escapeHtml(a.name)}</label></div>`; } }
             html += `<div style="margin:8px 0; font-weight:500;">对话记录</div>`;
-            if (conversations.length === 0) html += `<div style="color:#555577; padding-left:10px;">暂无对话</div>`;
-            else {
-                for (const conv of conversations) {
-                    const count = conv.messages ? conv.messages.length : 0;
-                    html += `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="conversation" value="${conv.id}" checked /><label>${escapeHtml(conv.title)} <span class="badge">(${count}条)</span></label></div>`;
-                }
-            }
+            if (conversations.length === 0) html += `<div style="color:var(--text-muted); padding-left:10px;">暂无对话</div>`;
+            else { for (const conv of conversations) { const count = conv.messages ? conv.messages.length : 0; html +=
+                        `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="conversation" value="${conv.id}" checked /><label>${escapeHtml(conv.title)} <span class="badge">(${count}条)</span></label></div>`; } }
+            html += `<div style="margin:8px 0; font-weight:500;">知识库</div>`;
+            if (knowledge.length === 0) html += `<div style="color:var(--text-muted); padding-left:10px;">暂无知识条目</div>`;
+            else { for (const k of knowledge) { html +=
+                        `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="knowledge" value="${k.id}" checked /><label>${escapeHtml(k.title)}</label></div>`; } }
+            html += `<div style="margin:8px 0; font-weight:500;">外部平台</div>`;
+            if (platforms.length === 0) html += `<div style="color:var(--text-muted); padding-left:10px;">暂无平台</div>`;
+            else { for (const p of platforms) { html +=
+                        `<div class="export-select-item"><input type="checkbox" class="export-check" data-type="platform" value="${p.id}" checked /><label>${escapeHtml(p.name)}</label></div>`; } }
             html += `<div style="margin-top:12px;"><button class="btn-secondary" id="exportSelectAll" style="padding:6px 0; width:100%;">全选</button></div>`;
 
             modalTitle.textContent = '📤 导出数据';
@@ -1046,9 +1103,6 @@
             modalCancel.textContent = '取消';
             modalFooter.style.display = 'flex';
 
-            // 全选/取消全选逻辑
-            let allChecked = true;
-            const checkboxes = modalBody.querySelectorAll('.export-check');
             const selectAllBtn = modalBody.querySelector('#exportSelectAll');
             if (selectAllBtn) {
                 selectAllBtn.addEventListener('click', function() {
@@ -1060,19 +1114,18 @@
             }
 
             modalSave.onclick = function() {
-                const selected = {
-                    configs: [],
-                    agents: [],
-                    conversations: []
-                };
+                const selected = { configs: [], agents: [], conversations: [], knowledge: [], platforms: [] };
                 modalBody.querySelectorAll('.export-check:checked').forEach(cb => {
                     const type = cb.dataset.type;
                     const val = cb.value;
                     if (type === 'config') selected.configs.push(val);
                     else if (type === 'agent') selected.agents.push(val);
                     else if (type === 'conversation') selected.conversations.push(val);
+                    else if (type === 'knowledge') selected.knowledge.push(val);
+                    else if (type === 'platform') selected.platforms.push(val);
                 });
-                if (selected.configs.length === 0 && selected.agents.length === 0 && selected.conversations.length === 0) {
+                if (selected.configs.length === 0 && selected.agents.length === 0 && selected.conversations.length === 0 &&
+                    selected.knowledge.length === 0 && selected.platforms.length === 0) {
                     showToast('请至少选择一项');
                     return;
                 }
@@ -1092,13 +1145,14 @@
                     configs: configs.filter(c => selected.configs.includes(c.id)),
                     agents: agents.filter(a => selected.agents.includes(a.id)),
                     conversations: conversations.filter(c => selected.conversations.includes(c.id)),
+                    knowledge: knowledge.filter(k => selected.knowledge.includes(k.id)),
+                    platforms: platforms.filter(p => selected.platforms.includes(p.id)),
+                    folders: folders,
                     currentConfigId: currentConfigId,
                     currentConvId: currentConvId,
                 };
-                // 如果当前选中的配置或对话不在导出列表中，清除引用
                 if (!exportData.configs.some(c => c.id === exportData.currentConfigId)) exportData.currentConfigId = null;
                 if (!exportData.conversations.some(c => c.id === exportData.currentConvId)) exportData.currentConvId = null;
-
                 const json = JSON.stringify(exportData, null, 2);
                 const blob = new Blob([json], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -1114,12 +1168,16 @@
         }
 
         function showImportModal() {
-            let html = `<div style="margin-bottom:12px; color:#8888aa;">选择要导入的数据类型：</div>`;
+            let html = `<div style="margin-bottom:12px; color:var(--text-muted);">选择要导入的数据类型：</div>`;
             html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="configs" checked /><label>API 配置</label></div>`;
             html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="agents" checked /><label>AI 角色</label></div>`;
             html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="conversations" checked /><label>对话记录</label></div>`;
-            html += `<div style="margin-top:12px; color:#8888aa; font-size:13px;">请选择备份文件</div>`;
-            html += `<input type="file" id="importFileSelect" accept=".json" style="margin-top:6px; width:100%; padding:8px; background:#0d0d1a; border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#e8e8f0;" />`;
+            html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="knowledge" checked /><label>知识库</label></div>`;
+            html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="folders" checked /><label>文件夹</label></div>`;
+            html += `<div class="export-select-item"><input type="checkbox" class="import-type-check" value="platforms" checked /><label>外部平台</label></div>`;
+            html += `<div style="margin-top:12px; color:var(--text-muted); font-size:13px;">请选择备份文件</div>`;
+            html +=
+                `<input type="file" id="importFileSelect" accept=".json" style="margin-top:6px; width:100%; padding:8px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; color:var(--text-primary);" />`;
 
             modalTitle.textContent = '📥 导入数据';
             modalBody.innerHTML = html;
@@ -1133,55 +1191,50 @@
                 modalBody.querySelectorAll('.import-type-check:checked').forEach(cb => types.push(cb.value));
                 if (types.length === 0) { showToast('请至少选择一种类型'); return; }
                 const fileInput = document.getElementById('importFileSelect');
-                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                    showToast('请选择备份文件');
-                    return;
-                }
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) { showToast('请选择备份文件'); return; }
                 const file = fileInput.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
                         const data = JSON.parse(e.target.result);
-                        if (!data.configs || !data.agents || !data.conversations) {
-                            throw new Error('数据格式无效');
-                        }
+                        if (!data.configs || !data.agents || !data.conversations) { throw new Error('数据格式无效'); }
                         if (!confirm(`导入将覆盖当前选中的数据类型（${types.join(', ')}），确定继续吗？`)) return;
                         if (types.includes('configs')) {
                             configs = data.configs || [];
-                            if (data.currentConfigId && configs.some(c => c.id === data.currentConfigId)) {
+                            if (data.currentConfigId && configs.some(c => c.id === data.currentConfigId))
                                 currentConfigId = data.currentConfigId;
-                            } else {
-                                currentConfigId = configs[0]?.id || null;
-                            }
+                            else currentConfigId = configs[0]?.id || null;
                             saveConfigs();
                         }
                         if (types.includes('agents')) {
                             agents = data.agents || [];
                             for (const a of agents) {
-                                if (!configs.some(c => c.id === a.configId)) {
-                                    a.configId = configs[0]?.id || null;
-                                }
+                                if (!configs.some(c => c.id === a.configId)) a.configId = configs[0]?.id || null;
                                 const cfg = configs.find(c => c.id === a.configId);
-                                if (cfg && a.model && !cfg.models.includes(a.model)) {
-                                    a.model = cfg.models[0] || '';
-                                }
+                                if (cfg && a.model && !cfg.models.includes(a.model)) a.model = cfg.models[0] || '';
                             }
                             saveAgents();
                         }
                         if (types.includes('conversations')) {
                             conversations = data.conversations || [];
-                            if (data.currentConvId && conversations.some(c => c.id === data.currentConvId)) {
+                            if (data.currentConvId && conversations.some(c => c.id === data.currentConvId))
                                 currentConvId = data.currentConvId;
-                            } else {
-                                currentConvId = conversations[0]?.id || null;
-                            }
+                            else currentConvId = conversations[0]?.id || null;
                             saveConversations();
                             loadCurrentConvMessages();
                         }
+                        if (types.includes('knowledge')) { knowledge = data.knowledge || [];
+                            saveKnowledge(); }
+                        if (types.includes('folders')) { folders = data.folders || [];
+                            saveFolders(); }
+                        if (types.includes('platforms')) { platforms = data.platforms || [];
+                            savePlatforms(); }
                         renderConversationList();
                         renderAtDropdown();
                         renderApiConfigList();
                         renderAgentConfigList();
+                        renderKnowledgeUI();
+                        renderPlatformsList();
                         showToast('✅ 数据导入成功');
                     } catch (err) { showToast('❌ 导入失败：' + err.message); }
                 };
@@ -1194,10 +1247,7 @@
             openModal();
         }
 
-        // ---------- 模态框控制 ----------
-        function openModal() {
-            modalOverlay.classList.add('active');
-        }
+        function openModal() { modalOverlay.classList.add('active'); }
 
         function closeModal() {
             modalOverlay.classList.remove('active');
@@ -1209,7 +1259,6 @@
             modalCallback = null;
         }
 
-        // ---------- 附件 ----------
         function handleFiles(files) {
             if (!files || files.length === 0) return;
             for (let i = 0; i < files.length; i++) {
@@ -1277,11 +1326,15 @@
         function clearAllAttachments() { uploadedFiles = [];
             renderAttachments(); }
 
-        // ---------- 流式 ----------
         async function streamAgent(agent, messages_payload, msgId, onUpdate, onDone, onError) {
             const cfg = getAgentConfig(agent.id);
             if (!cfg) { onError(new Error('未绑定API配置')); return; }
-            const { apiBase, apiKey, model, maxTokens } = cfg;
+            const { apiBase, apiKey, maxTokens } = cfg;
+            const model = agent.model;   // ✅ 修复：模型存在 agent.model 上，而非 cfg.model
+            if (!model || model.trim() === '') {
+                onError(new Error(`AI角色 "${agent.name}" 未选择模型，请先在AI角色配置中绑定模型`));
+                return;
+            }
             const url = `${apiBase.replace(/\/+$/, '')}/chat/completions`;
             const controller = new AbortController();
             activeControllers.push(controller);
@@ -1357,29 +1410,32 @@
             renderConversationList();
         }
 
-        // ---------- 快速回复 ----------
+        // ===== 快速回复：群聊模式随机顺序 + 顺序执行 =====
         async function quickReply(text) {
             if (!text && uploadedFiles.length === 0) { showToast('请输入消息或上传文件'); return; }
             if (isStreaming) return;
             let targets = getTargetAgents();
             if (targets.length === 0) { showToast('没有启用的AI'); return; }
-            if (groupChatMode) {
-                targets = targets.filter(agent => Math.random() < 0.4);
-                if (targets.length === 0) {
-                    const silentMsg = { id: genId(), role: 'divider', content: '💤 所有AI都选择了旁观，无人发言',
-                        timestamp: Date.now() };
-                    messages.push(silentMsg);
-                    addMessageElement(silentMsg, false);
-                    saveCurrentConversation();
-                    scrollToBottomIfNeeded();
-                    showToast('💤 所有AI保持沉默');
-                    return;
-                }
-            }
+
+            // 校验（✅ 修复：model 从 agent.model 取）
             for (const agent of targets) {
                 const cfg = getAgentConfig(agent.id);
                 if (!cfg || !cfg.apiKey) { showToast(`⚠️ "${agent.name}" 缺少API配置`); return; }
+                if (!agent.model || agent.model.trim() === '') {
+                    showToast(`⚠️ "${agent.name}" 未选择模型，请前往AI角色配置绑定模型`);
+                    return;
+                }
             }
+
+            // 群聊模式：随机打乱顺序
+            if (groupChatMode) {
+                targets = shuffleArray(targets);
+                if (targets.length === 0) {
+                    showToast('没有可发言的AI');
+                    return;
+                }
+            }
+
             isStreaming = true;
             setInputEnabled(false);
             sendBtn.disabled = false;
@@ -1400,7 +1456,28 @@
             scrollToBottomIfNeeded();
             clearAllAttachments();
 
-            const promises = targets.map(async (agent) => {
+            // 构建知识库上下文
+            let knowledgeContext = '';
+            if (knowledge.length > 0) {
+                const keywords = text.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+                const matched = knowledge.filter(k => {
+                    const contentLower = (k.title + ' ' + (k.content || '')).toLowerCase();
+                    return keywords.some(kw => contentLower.includes(kw));
+                });
+                if (matched.length > 0) {
+                    knowledgeContext = '\n\n[知识库参考]\n' + matched.map(k => `- ${k.title}: ${k.content || '[文件]'}`).join(
+                        '\n');
+                }
+            }
+
+            let platformContext = '';
+            const enabledPlatforms = platforms.filter(p => p.enabled);
+            if (enabledPlatforms.length > 0) {
+                platformContext = '\n\n[外部平台参考]\n' + enabledPlatforms.map(p => `- ${p.name}: 相关文档片段（模拟）`).join('\n');
+            }
+
+            // 定义单个 AI 的处理流程
+            const processAgent = async (agent) => {
                 const msgId = genId();
                 const msg = { id: msgId, role: 'agent', agentId: agent.id, content: '', timestamp: Date.now(),
                     streaming: true };
@@ -1408,7 +1485,9 @@
                 addMessageElement(msg, true);
                 saveCurrentConversation();
                 scrollToBottomIfNeeded();
-                const history = messages.filter(m => m.id !== msgId && m.role !== 'system' && !m.interrupted).slice(-10);
+
+                // 构建 payload：包含从对话开始到当前时刻的所有消息（包括前面 AI 的回复）
+                const history = messages.filter(m => m.id !== msgId && m.role !== 'system' && !m.interrupted).slice(-20);
                 const payload = [];
                 const sysPrompt = agent.prompt || '你是一个乐于助人的AI助手。';
                 payload.push({ role: 'system', content: sysPrompt });
@@ -1420,7 +1499,12 @@
                         else payload.push({ role: 'assistant', content: m.content });
                     }
                 }
-                payload.push({ role: 'user', content: userContent });
+                // 附加知识库与外部平台上下文
+                const contextSuffix = (knowledgeContext + platformContext);
+                if (contextSuffix) {
+                    payload.push({ role: 'user', content: contextSuffix });
+                }
+
                 await streamAgent(agent, payload, msgId,
                     (content) => { updateStreamingMessage(msgId, content); const m = messages.find(mm => mm.id === msgId); if (
                             m) m.content = content; },
@@ -1439,8 +1523,19 @@
                         saveCurrentConversation();
                         renderConversationList(); }
                 );
-            });
-            await Promise.allSettled(promises);
+            };
+
+            if (groupChatMode) {
+                // 顺序执行：一个说完，下一个再说
+                for (const agent of targets) {
+                    if (!isStreaming) break;
+                    await processAgent(agent);
+                }
+            } else {
+                // 并行执行
+                await Promise.allSettled(targets.map(agent => processAgent(agent)));
+            }
+
             if (streamingMsgIds.size === 0) { isStreaming = false;
                 setInputEnabled(true);
                 sendBtn.disabled = false; }
@@ -1449,11 +1544,14 @@
             inputBox.focus();
         }
 
-        // ---------- 辩论 ----------
         async function callAgentStreamForDebate(agent, roundName, userText, history, msgId, attachments) {
             const cfg = getAgentConfig(agent.id);
             if (!cfg) throw new Error('未绑定API配置');
-            const { apiBase, apiKey, model, maxTokens } = cfg;
+            const { apiBase, apiKey, maxTokens } = cfg;
+            const model = agent.model;   // ✅ 修复：模型存在 agent.model 上
+            if (!model || model.trim() === '') {
+                throw new Error(`AI角色 "${agent.name}" 未选择模型，请先在AI角色配置中绑定模型`);
+            }
             const url = `${apiBase.replace(/\/+$/, '')}/chat/completions`;
             let historyText = '';
             if (history.length > 0) historyText = history.map(h => `${h.name}: ${h.content}`).join('\n\n');
@@ -1482,6 +1580,20 @@
                 default:
                     userPrompt = `用户问题：${userText}${fileParts}\n\n请给出你的看法。`;
             }
+            let knowledgeContext = '';
+            if (knowledge.length > 0) {
+                const keywords = userText.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+                const matched = knowledge.filter(k => {
+                    const contentLower = (k.title + ' ' + (k.content || '')).toLowerCase();
+                    return keywords.some(kw => contentLower.includes(kw));
+                });
+                if (matched.length > 0) {
+                    knowledgeContext = '\n\n[知识库参考]\n' + matched.map(k => `- ${k.title}: ${k.content || '[文件]'}`).join(
+                        '\n');
+                }
+            }
+            userPrompt += knowledgeContext;
+
             const payload = [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
             const controller = new AbortController();
             activeControllers.push(controller);
@@ -1590,10 +1702,17 @@
             if (isStreaming || isDebating) return;
             const targets = getTargetAgents();
             if (targets.length < 2) { showToast('至少需要 2 个启用的 AI 才能开始讨论'); return; }
+
+            // 校验（✅ 修复：model 从 agent.model 取）
             for (const agent of targets) {
                 const cfg = getAgentConfig(agent.id);
                 if (!cfg || !cfg.apiKey) { showToast(`⚠️ "${agent.name}" 缺少API配置`); return; }
+                if (!agent.model || agent.model.trim() === '') {
+                    showToast(`⚠️ "${agent.name}" 未选择模型，请前往AI角色配置绑定模型`);
+                    return;
+                }
             }
+
             isDebating = true;
             isStreaming = true;
             debateBtn.disabled = true;
@@ -1683,71 +1802,89 @@
         }
 
         // ================================================================
-        //  配置中心 - 浮窗编辑
+        //  配置中心：UI 渲染与 history 彻底解耦
         // ================================================================
 
-        // 打开配置中心
-        function openConfigCenter() {
-            configCenter.classList.add('open');
-            showMenu();
+        // ---- 纯 UI 渲染函数（不碰 history）----
+        function showMenuUI() {
+            document.querySelectorAll('.config-subpage').forEach(el => el.classList.remove('active'));
+            configMenu.style.display = 'block';
+            configCenterTitle.textContent = '配置中心';
+            renderApiConfigList();
+            renderAgentConfigList();
+            renderKnowledgeUI();
+            renderPlatformsList();
         }
 
-        function closeConfigCenter() {
+        function showSubpageUI(page) {
+            configMenu.style.display = 'none';
+            document.querySelectorAll('.config-subpage').forEach(el => el.classList.remove('active'));
+            const sub = document.getElementById(`subpage-${page}`);
+            if (!sub) { showMenuUI(); return; }
+            sub.classList.add('active');
+            const titles = { api: 'API 配置', agents: 'AI 角色配置', knowledge: '知识库',
+                             platforms: '外部平台', mcp: 'MCP', skills: 'Skills', plugins: '插件' };
+            configCenterTitle.textContent = titles[page] || '配置';
+            if (page === 'api')       renderApiConfigList();
+            if (page === 'agents')    renderAgentConfigList();
+            if (page === 'knowledge') renderKnowledgeUI();
+            if (page === 'platforms') renderPlatformsList();
+        }
+
+        function closeConfigCenterUI() {
             configCenter.classList.remove('open');
             document.querySelectorAll('.config-subpage').forEach(el => el.classList.remove('active'));
             configMenu.style.display = 'block';
             configCenterTitle.textContent = '配置中心';
         }
 
-        function showMenu() {
-            document.querySelectorAll('.config-subpage').forEach(el => el.classList.remove('active'));
-            configMenu.style.display = 'block';
-            configCenterTitle.textContent = '配置中心';
-            renderApiConfigList();
-            renderAgentConfigList();
+        // ---- 对外入口：会写 history ----
+        function openConfigCenter() {
+            if (configCenter.classList.contains('open')) return;
+            configCenter.classList.add('open');
+            showMenuUI();
+            history.pushState({ config: 'menu' }, '', '#config');
         }
 
         function showSubpage(page) {
-            configMenu.style.display = 'none';
-            document.querySelectorAll('.config-subpage').forEach(el => el.classList.remove('active'));
-            const sub = document.getElementById(`subpage-${page}`);
-            if (sub) {
-                sub.classList.add('active');
-                const titles = { api: 'API 配置', agents: 'AI 角色配置', mcp: 'MCP', skills: 'Skills', knowledge: '知识库',
-                    plugins: '插件' };
-                configCenterTitle.textContent = titles[page] || '配置';
-                if (page === 'api') renderApiConfigList();
-                if (page === 'agents') renderAgentConfigList();
-            }
+            if (!configCenter.classList.contains('open')) return;
+            showSubpageUI(page);
+            history.pushState({ config: 'subpage', page }, '', `#config/${page}`);
         }
 
-        // ---------- API 配置列表 ----------
-        function renderApiConfigList() {
-            if (configs.length === 0) {
-                apiConfigList.innerHTML = `<div class="config-empty">暂无 API 配置，点击下方添加</div>`;
-                return;
+        // ---- 返回按钮：统一走 history.back() ----
+        configCenterBack.addEventListener('click', function () {
+            history.back();
+        });
+
+        // ---- popstate：只恢复 UI，不动 history ----
+        window.addEventListener('popstate', function (event) {
+            const state = event.state;
+            if (state && state.config) {
+                configCenter.classList.add('open');
+                if (state.config === 'subpage') showSubpageUI(state.page);
+                else                           showMenuUI();
+            } else {
+                closeConfigCenterUI();
             }
+        });
+
+        function renderApiConfigList() {
+            if (configs.length === 0) { apiConfigList.innerHTML = `<div class="config-empty">暂无 API 配置，点击下方添加</div>`; return; }
             let html = '';
             for (const c of configs) {
                 const modelsStr = c.models && c.models.length > 0 ? c.models.join(', ') : '未选择模型';
                 html += `
                     <div class="config-list-item" data-id="${c.id}">
-                        <div class="info">
-                            <div class="name">${escapeHtml(c.name)}</div>
-                            <div class="detail">${escapeHtml(c.apiBase)} · 模型: ${escapeHtml(modelsStr)} · max_tokens: ${c.maxTokens || 4096}</div>
-                        </div>
-                        <div class="actions">
-                            <button class="edit-btn" data-id="${c.id}" title="编辑">✎</button>
-                            <button class="delete-btn" data-id="${c.id}" title="删除" style="${configs.length <= 1 ? 'opacity:0.3;pointer-events:none;' : ''}">✕</button>
-                        </div>
+                        <div class="info"><div class="name">${escapeHtml(c.name)}</div><div class="detail">${escapeHtml(c.apiBase)} · 模型: ${escapeHtml(modelsStr)} · max_tokens: ${c.maxTokens || 4096}</div></div>
+                        <div class="actions"><button class="edit-btn" data-id="${c.id}" title="编辑">✎</button><button class="delete-btn" data-id="${c.id}" title="删除" style="${configs.length <= 1 ? 'opacity:0.3;pointer-events:none;' : ''}">✕</button></div>
                     </div>
                 `;
             }
             apiConfigList.innerHTML = html;
-            apiConfigList.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => { e.stopPropagation();
-                    openApiEditor(btn.dataset.id); });
-            });
+            apiConfigList.querySelectorAll('.edit-btn').forEach(btn => { btn.addEventListener('click', (e) => { e
+                        .stopPropagation();
+                    openApiEditor(btn.dataset.id); }); });
             apiConfigList.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1764,52 +1901,6 @@
             });
         }
 
-        // ---------- AI 角色列表 ----------
-        function renderAgentConfigList() {
-            if (agents.length === 0) {
-                agentConfigList.innerHTML = `<div class="config-empty">暂无 AI 角色，点击下方添加</div>`;
-                return;
-            }
-            let html = '';
-            for (const a of agents) {
-                const statusText = a.enabled ? '✅ 启用' : '⛔ 禁用';
-                const configName = configs.find(c => c.id === a.configId)?.name || '未绑定';
-                const modelName = a.model || '未选择';
-                html += `
-                    <div class="config-list-item" data-id="${a.id}">
-                        <div class="info">
-                            <div class="name">${a.avatar || '🤖'} ${escapeHtml(a.name)} <span style="font-size:12px;color:#666688;">${statusText}</span></div>
-                            <div class="detail">${escapeHtml(configName)} · 模型: ${escapeHtml(modelName)} · ${escapeHtml(a.prompt || '无提示词')}</div>
-                        </div>
-                        <div class="actions">
-                            <button class="edit-btn" data-id="${a.id}" title="编辑">✎</button>
-                            <button class="delete-btn" data-id="${a.id}" title="删除" style="${agents.length <= 1 ? 'opacity:0.3;pointer-events:none;' : ''}">✕</button>
-                        </div>
-                    </div>
-                `;
-            }
-            agentConfigList.innerHTML = html;
-            agentConfigList.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => { e.stopPropagation();
-                    openAgentEditor(btn.dataset.id); });
-            });
-            agentConfigList.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    if (agents.length <= 1) { showToast('至少保留一个角色'); return; }
-                    if (confirm(`删除角色 "${agents.find(a=>a.id===id)?.name}" 吗？`)) deleteAgentConfig(id);
-                });
-            });
-            agentConfigList.querySelectorAll('.config-list-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    if (e.target.closest('.actions')) return;
-                    openAgentEditor(item.dataset.id);
-                });
-            });
-        }
-
-        // ---------- 浮窗编辑 API ----------
         function openApiEditor(id) {
             const cfg = configs.find(c => c.id === id);
             if (!cfg && id !== 'new') return;
@@ -1828,13 +1919,13 @@
                 </div>
                 <div class="config-form-group">
                     <label>模型多选</label>
-                    <div class="btn-group" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
-                        <button id="apiFetchModels" class="select-all-btn" style="order:1;">获取模型</button>
-                        <button id="apiSelectAll" class="select-all-btn accent" style="order:2;">全选</button>
-                        <button id="apiDeselectAll" class="select-all-btn danger" style="order:3;">全不选</button>
-                    </div>
+                    <div class="btn-group"><button id="apiFetchModels" class="select-all-btn">获取模型</button><button id="apiSelectAll" class="select-all-btn accent">全选</button><button id="apiDeselectAll" class="select-all-btn danger">全不选</button></div>
                     <div class="model-multi-select" id="apiEditModelSelect"></div>
-                    <div style="font-size:12px; color:#666688; margin-top:4px;" id="apiEditModelStatus"></div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="apiEditModelStatus"></div>
+                    <div class="model-manual-add">
+                        <input id="apiManualModelInput" type="text" placeholder="手动输入模型名称" />
+                        <button id="apiAddManualModelBtn">添加</button>
+                    </div>
                 </div>
                 <div class="config-form-group"><label>最大输出 Token</label><input id="apiEditMaxTokens" type="number" value="${target.maxTokens || 4096}" placeholder="4096" min="1" step="1" /></div>
             `;
@@ -1844,15 +1935,12 @@
             modalSave.textContent = '保存';
             modalCancel.textContent = '取消';
 
-            // 初始化模型多选
-            const selectedModels = target.models || [];
+            const currentModels = target.models;
             window._apiEditFetchedModels = [];
-            renderApiEditModelCheckboxes(selectedModels);
+            renderApiEditModelCheckboxes(currentModels);
 
-            // 切换Key显示：使用 -webkit-text-security 实现非安全键盘的掩码
             const keyInput = document.getElementById('apiEditKey');
             const toggleBtn = document.getElementById('apiToggleKey');
-            // 初始状态为掩码（🔒）
             keyInput.style.webkitTextSecurity = 'disc';
             toggleBtn.textContent = '🔒';
             toggleBtn.addEventListener('click', function() {
@@ -1861,7 +1949,6 @@
                 this.textContent = isMasked ? '🔓' : '🔒';
             });
 
-            // 获取模型按钮
             document.getElementById('apiFetchModels').addEventListener('click', async function() {
                 const base = document.getElementById('apiEditBase').value.trim();
                 const key = document.getElementById('apiEditKey').value.trim();
@@ -1869,7 +1956,7 @@
                 if (!key) { showToast('请先填写 API Key'); return; }
                 const status = document.getElementById('apiEditModelStatus');
                 status.textContent = '⏳ 正在获取模型...';
-                status.style.color = '#8888aa';
+                status.style.color = 'var(--text-muted)';
                 try {
                     const url = `${base.replace(/\/+$/, '')}/models`;
                     const response = await fetch(url, { headers: { 'Authorization': `Bearer ${key}` } });
@@ -1881,34 +1968,48 @@
                     else throw new Error('无法解析模型列表');
                     if (models.length === 0) throw new Error('未获取到模型');
                     window._apiEditFetchedModels = models;
-                    const currentSelected = getApiEditSelectedModels();
-                    renderApiEditModelCheckboxes(currentSelected);
+                    renderApiEditModelCheckboxes(currentModels);
                     status.textContent = `✅ 已获取 ${models.length} 个模型`;
-                    status.style.color = '#4ade80';
+                    status.style.color = 'var(--success)';
                     showToast(`✅ 已获取 ${models.length} 个模型`);
                 } catch (err) {
                     status.textContent = `❌ 获取失败：${err.message}`;
-                    status.style.color = '#ff6b6b';
+                    status.style.color = 'var(--danger)';
                     showToast('❌ 获取模型失败');
                 }
             });
 
-            // 全选
             document.getElementById('apiSelectAll').addEventListener('click', function() {
-                document.querySelectorAll('#apiEditModelSelect input[type="checkbox"]').forEach(cb => {
-                    cb.checked = true;
-                    cb.closest('.model-option').classList.add('selected');
-                });
+                const cbs = document.querySelectorAll('#apiEditModelSelect input[type="checkbox"]');
+                cbs.forEach(cb => { cb.checked = true; });
+                const allModels = [];
+                cbs.forEach(cb => { allModels.push(cb.value); });
+                currentModels.length = 0;
+                currentModels.push(...allModels);
+                cbs.forEach(cb => { cb.closest('.model-option').classList.add('selected'); });
                 updateApiModelStatus();
             });
 
-            // 全不选
             document.getElementById('apiDeselectAll').addEventListener('click', function() {
-                document.querySelectorAll('#apiEditModelSelect input[type="checkbox"]').forEach(cb => {
-                    cb.checked = false;
-                    cb.closest('.model-option').classList.remove('selected');
-                });
+                const cbs = document.querySelectorAll('#apiEditModelSelect input[type="checkbox"]');
+                cbs.forEach(cb => { cb.checked = false;
+                    cb.closest('.model-option').classList.remove('selected'); });
+                currentModels.length = 0;
                 updateApiModelStatus();
+            });
+
+            document.getElementById('apiAddManualModelBtn').addEventListener('click', function() {
+                const input = document.getElementById('apiManualModelInput');
+                const val = input.value.trim();
+                if (!val) { showToast('请输入模型名称'); return; }
+                if (!currentModels.includes(val)) {
+                    currentModels.push(val);
+                    renderApiEditModelCheckboxes(currentModels);
+                    input.value = '';
+                    showToast(`✅ 已添加模型: ${val}`);
+                } else {
+                    showToast('模型已存在');
+                }
             });
 
             modalSave.onclick = function() {
@@ -1916,37 +2017,25 @@
                 const base = document.getElementById('apiEditBase').value.trim();
                 const key = document.getElementById('apiEditKey').value.trim();
                 const maxTokens = parseInt(document.getElementById('apiEditMaxTokens').value) || 4096;
-                const models = getApiEditSelectedModels();
+                const models = currentModels;
                 if (!name || !base || !key) { showToast('请填写完整信息'); return; }
                 if (models.length === 0) { showToast('请至少选择一个模型'); return; }
 
                 if (isNew) {
-                    configs.push({
-                        id: 'cfg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-                        name,
-                        apiBase: base,
-                        apiKey: key,
-                        models,
-                        maxTokens
-                    });
+                    configs.push({ id: 'cfg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5), name, apiBase: base,
+                        apiKey: key, models: models.slice(), maxTokens });
                 } else {
                     const idx = configs.findIndex(c => c.id === id);
-                    if (idx !== -1) configs[idx] = { ...configs[idx], name, apiBase: base, apiKey: key, models,
-                    maxTokens };
+                    if (idx !== -1) configs[idx] = { ...configs[idx], name, apiBase: base, apiKey: key, models: models
+                            .slice(), maxTokens };
                 }
                 saveConfigs();
-                if (!currentConfigId || !configs.some(c => c.id === currentConfigId)) {
-                    currentConfigId = configs[0].id;
-                    saveConfigs();
-                }
+                if (!currentConfigId || !configs.some(c => c.id === currentConfigId)) { currentConfigId = configs[0].id;
+                    saveConfigs(); }
                 for (const a of agents) {
-                    if (!a.configId || !configs.some(c => c.id === a.configId)) {
-                        a.configId = currentConfigId;
-                    }
+                    if (!a.configId || !configs.some(c => c.id === a.configId)) { a.configId = currentConfigId; }
                     const cfg = configs.find(c => c.id === a.configId);
-                    if (cfg && a.model && !cfg.models.includes(a.model)) {
-                        a.model = cfg.models[0] || '';
-                    }
+                    if (cfg && a.model && !cfg.models.includes(a.model)) { a.model = cfg.models[0] || ''; }
                 }
                 saveAgents();
                 renderApiConfigList();
@@ -1958,10 +2047,8 @@
 
             modalDelete.onclick = function() {
                 if (configs.length <= 1) { showToast('至少保留一个配置'); return; }
-                if (confirm(`确定删除配置 "${configs.find(c=>c.id===id)?.name}" 吗？`)) {
-                    deleteApiConfig(id);
-                    closeModal();
-                }
+                if (confirm(`确定删除配置 "${configs.find(c=>c.id===id)?.name}" 吗？`)) { deleteApiConfig(id);
+                    closeModal(); }
             };
 
             modalCancel.onclick = closeModal;
@@ -1971,13 +2058,14 @@
 
         function renderApiEditModelCheckboxes(selected) {
             const container = document.getElementById('apiEditModelSelect');
-            const models = window._apiEditFetchedModels || [];
-            if (models.length === 0) {
-                container.innerHTML = `<div style="color:#666688; font-size:13px;">请先点击「获取模型」拉取列表</div>`;
+            const fetched = window._apiEditFetchedModels || [];
+            const allModels = Array.from(new Set([...fetched, ...selected]));
+            if (allModels.length === 0) {
+                container.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">请先点击「获取模型」拉取列表，或手动添加</div>`;
                 return;
             }
             let html = '';
-            for (const m of models) {
+            for (const m of allModels) {
                 const checked = selected.includes(m) ? 'checked' : '';
                 html += `
                     <label class="model-option ${checked ? 'selected' : ''}">
@@ -1989,16 +2077,18 @@
             container.innerHTML = html;
             container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 cb.addEventListener('change', function() {
+                    const val = this.value;
+                    if (this.checked) {
+                        if (!selected.includes(val)) selected.push(val);
+                    } else {
+                        const idx = selected.indexOf(val);
+                        if (idx !== -1) selected.splice(idx, 1);
+                    }
                     this.closest('.model-option').classList.toggle('selected', this.checked);
                     updateApiModelStatus();
                 });
             });
             updateApiModelStatus();
-        }
-
-        function getApiEditSelectedModels() {
-            const cbs = document.querySelectorAll('#apiEditModelSelect input[type="checkbox"]:checked');
-            return Array.from(cbs).map(cb => cb.value);
         }
 
         function updateApiModelStatus() {
@@ -2017,13 +2107,9 @@
             if (currentConfigId === id) currentConfigId = configs[0].id;
             saveConfigs();
             for (const a of agents) {
-                if (!configs.some(c => c.id === a.configId)) {
-                    a.configId = configs[0]?.id || null;
-                }
+                if (!configs.some(c => c.id === a.configId)) a.configId = configs[0]?.id || null;
                 const cfg = configs.find(c => c.id === a.configId);
-                if (cfg && a.model && !cfg.models.includes(a.model)) {
-                    a.model = cfg.models[0] || '';
-                }
+                if (cfg && a.model && !cfg.models.includes(a.model)) a.model = cfg.models[0] || '';
             }
             saveAgents();
             renderApiConfigList();
@@ -2032,7 +2118,40 @@
             showToast('已删除配置');
         }
 
-        // ---------- 浮窗编辑 AI 角色 ----------
+        function renderAgentConfigList() {
+            if (agents.length === 0) { agentConfigList.innerHTML = `<div class="config-empty">暂无 AI 角色，点击下方添加</div>`; return; }
+            let html = '';
+            for (const a of agents) {
+                const statusText = a.enabled ? '✅ 启用' : '⛔ 禁用';
+                const configName = configs.find(c => c.id === a.configId)?.name || '未绑定';
+                const modelName = a.model || '未选择';
+                html += `
+                    <div class="config-list-item" data-id="${a.id}">
+                        <div class="info"><div class="name">${a.avatar || '🤖'} ${escapeHtml(a.name)} <span style="font-size:12px;color:var(--text-muted);">${statusText}</span></div><div class="detail">${escapeHtml(configName)} · 模型: ${escapeHtml(modelName)} · ${escapeHtml(a.prompt || '无提示词')}</div></div>
+                        <div class="actions"><button class="edit-btn" data-id="${a.id}" title="编辑">✎</button><button class="delete-btn" data-id="${a.id}" title="删除" style="${agents.length <= 1 ? 'opacity:0.3;pointer-events:none;' : ''}">✕</button></div>
+                    </div>
+                `;
+            }
+            agentConfigList.innerHTML = html;
+            agentConfigList.querySelectorAll('.edit-btn').forEach(btn => { btn.addEventListener('click', (e) => { e
+                        .stopPropagation();
+                    openAgentEditor(btn.dataset.id); }); });
+            agentConfigList.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (agents.length <= 1) { showToast('至少保留一个角色'); return; }
+                    if (confirm(`删除角色 "${agents.find(a=>a.id===id)?.name}" 吗？`)) deleteAgentConfig(id);
+                });
+            });
+            agentConfigList.querySelectorAll('.config-list-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.actions')) return;
+                    openAgentEditor(item.dataset.id);
+                });
+            });
+        }
+
         function openAgentEditor(id) {
             const agent = agents.find(a => a.id === id);
             if (!agent && id !== 'new') return;
@@ -2055,26 +2174,12 @@
             }
 
             let bodyHtml = `
-                <div class="config-form-group">
-                    <label>头像 (Emoji)</label>
-                    <input id="agentEditAvatar" value="${escapeHtml(target.avatar || '🤖')}" maxlength="2" style="width:60px; text-align:center; font-size:24px;" />
-                </div>
+                <div class="config-form-group"><label>头像 (Emoji)</label><input id="agentEditAvatar" value="${escapeHtml(target.avatar || '🤖')}" maxlength="2" style="width:60px; text-align:center; font-size:24px;" /></div>
                 <div class="config-form-group"><label>角色名称</label><input id="agentEditName" value="${escapeHtml(target.name)}" placeholder="角色名称" /></div>
-                <div class="config-form-group">
-                    <label>绑定 API 配置</label>
-                    <select id="agentEditConfig">${configOptions}</select>
-                </div>
-                <div class="config-form-group">
-                    <label>选择模型</label>
-                    <select id="agentEditModel">${modelOptions}</select>
-                </div>
+                <div class="config-form-group"><label>绑定 API 配置</label><select id="agentEditConfig">${configOptions}</select></div>
+                <div class="config-form-group"><label>选择模型</label><select id="agentEditModel">${modelOptions}</select></div>
                 <div class="config-form-group"><label>系统提示词</label><textarea id="agentEditPrompt" rows="3" placeholder="你是一个乐于助人的AI助手…">${escapeHtml(target.prompt || '')}</textarea></div>
-                <div class="config-form-group">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                        <input type="checkbox" id="agentEditEnabled" ${target.enabled ? 'checked' : ''} style="width:18px; height:18px; accent-color:#4f8cff;" />
-                        启用此角色
-                    </label>
-                </div>
+                <div class="config-form-group"><label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="agentEditEnabled" ${target.enabled ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--accent);" /> 启用此角色</label></div>
             `;
             modalTitle.textContent = isNew ? '新增 AI 角色' : '编辑 AI 角色';
             modalBody.innerHTML = bodyHtml;
@@ -2087,11 +2192,8 @@
                 const cfg = configs.find(c => c.id === configId);
                 const modelSelect = document.getElementById('agentEditModel');
                 let html = '<option value="">请选择模型</option>';
-                if (cfg && cfg.models) {
-                    for (const m of cfg.models) {
-                        html += `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`;
-                    }
-                }
+                if (cfg && cfg.models) { for (const m of cfg.models) { html +=
+                        `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`; } }
                 modelSelect.innerHTML = html;
             });
 
@@ -2107,15 +2209,8 @@
                 if (!model) { showToast('请选择模型'); return; }
 
                 if (isNew) {
-                    agents.push({
-                        id: 'agent_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-                        avatar,
-                        name,
-                        configId,
-                        model,
-                        prompt,
-                        enabled,
-                    });
+                    agents.push({ id: 'agent_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5), avatar, name,
+                        configId, model, prompt, enabled });
                 } else {
                     const idx = agents.findIndex(a => a.id === id);
                     if (idx !== -1) agents[idx] = { ...agents[idx], avatar, name, configId, model, prompt, enabled };
@@ -2129,10 +2224,8 @@
 
             modalDelete.onclick = function() {
                 if (agents.length <= 1) { showToast('至少保留一个角色'); return; }
-                if (confirm(`确定删除角色 "${agents.find(a=>a.id===id)?.name}" 吗？`)) {
-                    deleteAgentConfig(id);
-                    closeModal();
-                }
+                if (confirm(`确定删除角色 "${agents.find(a=>a.id===id)?.name}" 吗？`)) { deleteAgentConfig(id);
+                    closeModal(); }
             };
 
             modalCancel.onclick = closeModal;
@@ -2153,9 +2246,411 @@
             showToast('已删除角色');
         }
 
-        // ================================================================
-        //  事件绑定
-        // ================================================================
+        let currentFolderFilter = null;
+
+        function renderKnowledgeUI() {
+            renderFolderTree();
+            renderDocList();
+        }
+
+        function renderFolderTree() {
+            const rootFolders = folders.filter(f => !f.parentId);
+            let html = '';
+            if (rootFolders.length === 0 && folders.length === 0) {
+                html = `<div class="folder-item" style="color:var(--text-muted); font-size:13px;">暂无文件夹</div>`;
+            } else {
+                function renderTree(folderId, depth) {
+                    const children = folders.filter(f => f.parentId === folderId);
+                    if (children.length === 0) return '';
+                    let treeHtml = '';
+                    for (const f of children) {
+                        const count = knowledge.filter(k => k.folderId === f.id).length;
+                        const selected = currentFolderFilter === f.id ? 'selected' : '';
+                        treeHtml += `
+                            <div class="folder-item ${selected}" style="padding-left:${depth * 16 + 8}px;" data-id="${f.id}">
+                                <span class="folder-icon">📁</span>
+                                <span class="folder-name">${escapeHtml(f.name)}</span>
+                                <span class="folder-count">(${count})</span>
+                                <div class="folder-actions">
+                                    <button class="folder-select" data-id="${f.id}" title="筛选">🔍</button>
+                                    <button class="folder-rename" data-id="${f.id}" title="重命名">✎</button>
+                                    <button class="folder-delete danger" data-id="${f.id}" title="删除">✕</button>
+                                </div>
+                            </div>
+                        `;
+                        treeHtml += renderTree(f.id, depth + 1);
+                    }
+                    return treeHtml;
+                }
+                html = renderTree(null, 0);
+            }
+            folderTree.innerHTML = html;
+            folderTree.querySelectorAll('.folder-select').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    currentFolderFilter = btn.dataset.id;
+                    renderKnowledgeUI(); });
+            });
+            folderTree.querySelectorAll('.folder-rename').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const folder = folders.find(f => f.id === id);
+                    if (!folder) return;
+                    const newName = prompt('输入新文件夹名称：', folder.name);
+                    if (newName && newName.trim()) { folder.name = newName.trim();
+                        saveFolders();
+                        renderKnowledgeUI();
+                        showToast('✅ 已重命名'); }
+                });
+            });
+            folderTree.querySelectorAll('.folder-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (confirm('确定删除此文件夹及其所有子文件夹吗？（文档不会被删除，仅解除关联）')) {
+                        const toDelete = [id];
+                        function findChildren(parentId) {
+                            const kids = folders.filter(f => f.parentId === parentId);
+                            for (const k of kids) { toDelete.push(k.id);
+                                findChildren(k.id); }
+                        }
+                        findChildren(id);
+                        folders = folders.filter(f => !toDelete.includes(f.id));
+                        for (const doc of knowledge) {
+                            if (toDelete.includes(doc.folderId)) doc.folderId = null;
+                        }
+                        saveFolders();
+                        saveKnowledge();
+                        renderKnowledgeUI();
+                        showToast('已删除文件夹');
+                    }
+                });
+            });
+            folderTree.querySelectorAll('.folder-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.folder-actions')) return;
+                    const id = item.dataset.id;
+                    if (id) { currentFolderFilter = id;
+                        renderKnowledgeUI(); }
+                });
+            });
+        }
+
+        function renderDocList() {
+            const searchText = kbSearchInput.value.toLowerCase();
+            let filtered = knowledge.slice();
+            if (currentFolderFilter) {
+                filtered = filtered.filter(k => k.folderId === currentFolderFilter);
+            }
+            if (searchText) {
+                filtered = filtered.filter(k => k.title.toLowerCase().includes(searchText) || (k.content && k.content
+                    .toLowerCase().includes(searchText)) || (k.tags && k.tags.some(t => t.toLowerCase().includes(
+                    searchText))));
+            }
+            if (filtered.length === 0) {
+                knowledgeList.innerHTML = `<div class="config-empty">暂无文档，请上传或手动添加</div>`;
+                return;
+            }
+            let html = '';
+            for (const doc of filtered) {
+                const folder = folders.find(f => f.id === doc.folderId);
+                const folderName = folder ? folder.name : '未分类';
+                const tagsHtml = (doc.tags && doc.tags.length > 0) ? doc.tags.map(t =>
+                    `<span class="tag">#${escapeHtml(t)}</span>`).join(' ') : '';
+                const previewText = doc.content ? doc.content.slice(0, 100) : (doc.fileName || '文件');
+                html += `
+                    <div class="kb-doc-item" data-id="${doc.id}">
+                        <div class="doc-header">
+                            <span class="doc-icon">${doc.type === 'file' ? '📎' : '📄'}</span>
+                            <span class="doc-title">${escapeHtml(doc.title)}</span>
+                            <div class="doc-actions">
+                                <button class="doc-edit" data-id="${doc.id}" title="编辑">✎</button>
+                            </div>
+                        </div>
+                        <div class="doc-meta">
+                            <span>📁 ${escapeHtml(folderName)}</span>
+                            ${tagsHtml}
+                            <span>📅 ${new Date(doc.createdAt).toLocaleDateString('zh-CN')}</span>
+                            ${doc.fileName ? `<span>📄 ${escapeHtml(doc.fileName)}</span>` : ''}
+                        </div>
+                        <div class="doc-preview">${escapeHtml(previewText)}${doc.content && doc.content.length > 100 ? '…' : ''}</div>
+                    </div>
+                `;
+            }
+            knowledgeList.innerHTML = html;
+
+            knowledgeList.querySelectorAll('.doc-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    openDocEditor(btn.dataset.id); });
+            });
+
+            knowledgeList.querySelectorAll('.kb-doc-item').forEach(item => {
+                let pressTimer = null;
+                const startPress = (e) => {
+                    pressTimer = setTimeout(() => {
+                        const id = item.dataset.id;
+                        const doc = knowledge.find(k => k.id === id);
+                        if (doc && confirm(`确定删除文档 "${doc.title}" 吗？`)) {
+                            knowledge = knowledge.filter(k => k.id !== id);
+                            saveKnowledge();
+                            renderKnowledgeUI();
+                            showToast('已删除文档');
+                        }
+                        pressTimer = null;
+                    }, 600);
+                };
+                const endPress = () => {
+                    if (pressTimer) { clearTimeout(pressTimer);
+                        pressTimer = null; }
+                };
+                item.addEventListener('touchstart', startPress);
+                item.addEventListener('touchend', endPress);
+                item.addEventListener('touchmove', endPress);
+                item.addEventListener('mousedown', startPress);
+                item.addEventListener('mouseup', endPress);
+                item.addEventListener('mouseleave', endPress);
+                item.querySelector('.doc-edit')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (pressTimer) { clearTimeout(pressTimer);
+                        pressTimer = null; }
+                });
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.doc-actions')) return;
+                });
+            });
+        }
+
+        function openDocEditor(id) {
+            const isNew = id === 'new';
+            const doc = isNew ? null : knowledge.find(k => k.id === id);
+            if (!isNew && !doc) return;
+
+            let folderOptions = '<option value="">未分类</option>';
+            for (const f of folders) {
+                const sel = (doc && doc.folderId === f.id) ? 'selected' : '';
+                folderOptions += `<option value="${f.id}" ${sel}>${escapeHtml(f.name)}</option>`;
+            }
+            const tagsValue = doc && doc.tags ? doc.tags.join(', ') : '';
+
+            let bodyHtml = `
+                <div class="config-form-group"><label>标题</label><input id="docTitle" value="${doc ? escapeHtml(doc.title) : ''}" placeholder="文档标题" /></div>
+                <div class="config-form-group"><label>内容（如果是文件类型，此项可为空）</label><textarea id="docContent" rows="6" placeholder="文档内容…">${doc ? escapeHtml(doc.content || '') : ''}</textarea></div>
+                <div class="config-form-group"><label>所属文件夹</label><select id="docFolder">${folderOptions}</select></div>
+                <div class="config-form-group"><label>标签（用逗号分隔）</label><input id="docTags" value="${escapeHtml(tagsValue)}" placeholder="例如：技术, 手册" /></div>
+                <div class="config-form-group"><label>类型</label><select id="docType"><option value="text" ${doc && doc.type === 'text' ? 'selected' : ''}>文本</option><option value="file" ${doc && doc.type === 'file' ? 'selected' : ''}>文件</option></select></div>
+            `;
+            modalTitle.textContent = isNew ? '新增文档' : '编辑文档';
+            modalBody.innerHTML = bodyHtml;
+            modalDelete.style.display = isNew ? 'none' : 'block';
+            modalSave.textContent = '保存';
+            modalCancel.textContent = '取消';
+
+            modalSave.onclick = function() {
+                const title = document.getElementById('docTitle').value.trim();
+                const content = document.getElementById('docContent').value.trim();
+                const folderId = document.getElementById('docFolder').value || null;
+                const tags = document.getElementById('docTags').value.split(',').map(s => s.trim()).filter(Boolean);
+                const type = document.getElementById('docType').value;
+                if (!title) { showToast('请输入标题'); return; }
+
+                if (isNew) {
+                    knowledge.push({ id: 'k_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), title, content,
+                        folderId, tags, createdAt: Date.now(), type, fileName: null });
+                } else {
+                    const idx = knowledge.findIndex(k => k.id === id);
+                    if (idx !== -1) knowledge[idx] = { ...knowledge[idx], title, content, folderId, tags, type };
+                }
+                saveKnowledge();
+                renderKnowledgeUI();
+                closeModal();
+                showToast('✅ 文档已保存');
+            };
+
+            modalDelete.onclick = function() {
+                if (confirm(`确定删除文档 "${doc.title}" 吗？`)) {
+                    knowledge = knowledge.filter(k => k.id !== id);
+                    saveKnowledge();
+                    renderKnowledgeUI();
+                    closeModal();
+                    showToast('已删除文档');
+                }
+            };
+
+            modalCancel.onclick = closeModal;
+            modalCloseBtn.onclick = closeModal;
+            openModal();
+        }
+
+        function handleKnowledgeFiles(files) {
+            if (!files || files.length === 0) return;
+            let successCount = 0;
+            let failCount = 0;
+            const total = files.length;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const isText = file.type.startsWith('text/') || file.name.match(/\.(txt|md|json|csv|log|xml|html|css|js|py|java|c|cpp|h|sh|bat|ps1|rb|go|rs|swift|kt|dart)$/i);
+                if (isText) {
+                    const reader = new FileReader();
+                    reader.onload = (function(f) {
+                        return function(e) {
+                            const content = e.target.result;
+                            let title = f.name.replace(/\.[^/.]+$/, '');
+                            if (title.length > 50) title = title.slice(0, 47) + '…';
+                            knowledge.push({
+                                id: 'k_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                                title: title,
+                                content: content,
+                                folderId: null,
+                                tags: [],
+                                createdAt: Date.now(),
+                                type: 'text',
+                                fileName: f.name,
+                            });
+                            successCount++;
+                            if (successCount + failCount === total) {
+                                saveKnowledge();
+                                renderKnowledgeUI();
+                                showToast(`✅ 成功导入 ${successCount} 个文件${failCount > 0 ? `，${failCount} 个跳过` : ''}`);
+                            }
+                        };
+                    })(file);
+                    reader.onerror = function() {
+                        failCount++;
+                        if (successCount + failCount === total) {
+                            saveKnowledge();
+                            renderKnowledgeUI();
+                            showToast(`✅ 成功导入 ${successCount} 个文件${failCount > 0 ? `，${failCount} 个失败` : ''}`);
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    let title = file.name.replace(/\.[^/.]+$/, '');
+                    if (title.length > 50) title = title.slice(0, 47) + '…';
+                    knowledge.push({
+                        id: 'k_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                        title: title,
+                        content: '',
+                        folderId: null,
+                        tags: [],
+                        createdAt: Date.now(),
+                        type: 'file',
+                        fileName: file.name,
+                    });
+                    successCount++;
+                    if (successCount + failCount === total) {
+                        saveKnowledge();
+                        renderKnowledgeUI();
+                        showToast(`✅ 已导入 ${successCount} 个文件（保留原始格式）${failCount > 0 ? `，${failCount} 个跳过` : ''}`);
+                    }
+                }
+            }
+        }
+
+        function addFolder() {
+            const name = prompt('请输入文件夹名称：');
+            if (!name || !name.trim()) return;
+            folders.push({ id: 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name: name.trim(),
+                parentId: null, createdAt: Date.now() });
+            saveFolders();
+            renderKnowledgeUI();
+            showToast('✅ 文件夹已创建');
+        }
+
+        function renderPlatformsList() {
+            const container = document.getElementById('platformList');
+            if (platforms.length === 0) {
+                container.innerHTML = `<div class="config-empty">暂无外部平台，点击下方添加</div>`;
+                return;
+            }
+            let html = '';
+            for (const p of platforms) {
+                const status = p.enabled ? '✅ 启用' : '⛔ 禁用';
+                html += `
+                    <div class="config-list-item" data-id="${p.id}">
+                        <div class="info"><div class="name">${escapeHtml(p.name)} <span style="font-size:12px;color:var(--text-muted);">${status}</span></div><div class="detail">${escapeHtml(p.apiBase)} · 模型: ${escapeHtml(p.model || '默认')}</div></div>
+                        <div class="actions"><button class="platform-edit" data-id="${p.id}" title="编辑">✎</button><button class="platform-delete danger" data-id="${p.id}" title="删除">✕</button></div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            container.querySelectorAll('.platform-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation();
+                    openPlatformEditor(btn.dataset.id); });
+            });
+            container.querySelectorAll('.platform-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    if (confirm(`删除平台 "${platforms.find(p=>p.id===id)?.name}" 吗？`)) {
+                        platforms = platforms.filter(p => p.id !== id);
+                        savePlatforms();
+                        renderPlatformsList();
+                        showToast('已删除平台');
+                    }
+                });
+            });
+            container.querySelectorAll('.config-list-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.actions')) return;
+                    openPlatformEditor(item.dataset.id);
+                });
+            });
+        }
+
+        function openPlatformEditor(id) {
+            const isNew = id === 'new';
+            const target = isNew ? { name: '', apiBase: '', apiKey: '', model: '', enabled: true } : platforms.find(p => p
+                .id === id);
+            if (!target && !isNew) return;
+
+            let bodyHtml = `
+                <div class="config-form-group"><label>平台名称</label><input id="platName" value="${escapeHtml(target.name)}" placeholder="例如：Notion" /></div>
+                <div class="config-form-group"><label>API 地址</label><input id="platBase" value="${escapeHtml(target.apiBase)}" placeholder="https://api.notion.com/v1" /></div>
+                <div class="config-form-group"><label>API Key</label><input id="platKey" type="text" style="-webkit-text-security: disc;" value="${escapeHtml(target.apiKey)}" placeholder="sk-..." /></div>
+                <div class="config-form-group"><label>模型（可选）</label><input id="platModel" value="${escapeHtml(target.model || '')}" placeholder="留空使用默认" /></div>
+                <div class="config-form-group"><label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="platEnabled" ${target.enabled ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--accent);" /> 启用此平台</label></div>
+            `;
+            modalTitle.textContent = isNew ? '添加外部平台' : '编辑外部平台';
+            modalBody.innerHTML = bodyHtml;
+            modalDelete.style.display = isNew ? 'none' : 'block';
+            modalSave.textContent = '保存';
+            modalCancel.textContent = '取消';
+
+            modalSave.onclick = function() {
+                const name = document.getElementById('platName').value.trim();
+                const apiBase = document.getElementById('platBase').value.trim();
+                const apiKey = document.getElementById('platKey').value.trim();
+                const model = document.getElementById('platModel').value.trim();
+                const enabled = document.getElementById('platEnabled').checked;
+                if (!name || !apiBase) { showToast('请填写名称和API地址'); return; }
+
+                if (isNew) {
+                    platforms.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name, apiBase,
+                        apiKey, model, enabled });
+                } else {
+                    const idx = platforms.findIndex(p => p.id === id);
+                    if (idx !== -1) platforms[idx] = { ...platforms[idx], name, apiBase, apiKey, model, enabled };
+                }
+                savePlatforms();
+                renderPlatformsList();
+                closeModal();
+                showToast('✅ 平台已保存');
+            };
+
+            modalDelete.onclick = function() {
+                if (confirm(`删除平台 "${target.name}" 吗？`)) {
+                    platforms = platforms.filter(p => p.id !== id);
+                    savePlatforms();
+                    renderPlatformsList();
+                    closeModal();
+                    showToast('已删除平台');
+                }
+            };
+
+            modalCancel.onclick = closeModal;
+            modalCloseBtn.onclick = closeModal;
+            openModal();
+        }
 
         sendBtn.addEventListener('click', () => {
             if (isStreaming) { stopAllStreams(); return; }
@@ -2195,20 +2690,8 @@
         });
 
         settingsBtn.addEventListener('click', openConfigCenter);
+        themeToggleBtn.addEventListener('click', toggleTheme);
 
-        // 配置中心返回按钮逻辑：根据当前状态决定返回上一级还是关闭
-        configCenterBack.addEventListener('click', function() {
-            const activeSubpage = document.querySelector('.config-subpage.active');
-            if (activeSubpage) {
-                // 有子页面激活，返回菜单（上一级）
-                showMenu();
-            } else {
-                // 在菜单页，关闭配置中心
-                closeConfigCenter();
-            }
-        });
-
-        // 配置菜单点击
         document.querySelectorAll('.config-menu-item').forEach(item => {
             item.addEventListener('click', () => {
                 const page = item.dataset.page;
@@ -2216,39 +2699,36 @@
             });
         });
 
-        // 子页面返回（通过子页面的返回按钮，实际已移除，但保留点击事件以防万一）
-        document.querySelectorAll('.sub-back').forEach(btn => {
-            btn.addEventListener('click', () => {
-                showMenu();
-            });
-        });
+        apiAddBtn.addEventListener('click', () => { openApiEditor('new'); });
+        agentAddBtn.addEventListener('click', () => { openAgentEditor('new'); });
 
-        // API 添加
-        apiAddBtn.addEventListener('click', () => {
-            openApiEditor('new');
+        kbAddDocBtn.addEventListener('click', () => { openDocEditor('new'); });
+        kbUploadBtn.addEventListener('click', () => { kbFileInput.click(); });
+        kbFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleKnowledgeFiles(e.target.files);
+            }
+            kbFileInput.value = '';
         });
+        kbAddFolderBtn.addEventListener('click', addFolder);
+        kbSearchBtn.addEventListener('click', () => { renderDocList(); });
+        kbSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderDocList(); });
 
-        // AI 角色添加
-        agentAddBtn.addEventListener('click', () => {
-            openAgentEditor('new');
-        });
+        document.getElementById('platformAddBtn').addEventListener('click', () => { openPlatformEditor('new'); });
 
-        // @选择器
         atBtn.addEventListener('click', (e) => { e.stopPropagation();
             toggleAtDropdown(); });
         document.addEventListener('click', (e) => { if (!atSelector.contains(e.target)) closeAtDropdown(); });
 
-        // 文件上传
         fileBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) { handleFiles(e.target.files); }
             fileInput.value = '';
         });
 
-        // 拖拽
         const inputArea = document.getElementById('inputArea');
         inputArea.addEventListener('dragover', (e) => { e.preventDefault();
-            inputArea.style.borderColor = 'rgba(79,140,255,0.5)'; });
+            inputArea.style.borderColor = 'var(--accent)'; });
         inputArea.addEventListener('dragleave', (e) => { e.preventDefault();
             inputArea.style.borderColor = ''; });
         inputArea.addEventListener('drop', (e) => {
@@ -2257,19 +2737,13 @@
             if (e.dataTransfer.files.length > 0) { handleFiles(e.dataTransfer.files); }
         });
 
-        // 导出/导入（多选）
         exportBtn.addEventListener('click', showExportModal);
         importBtn.addEventListener('click', showImportModal);
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (configCenter.classList.contains('open')) {
-                    const activeSubpage = document.querySelector('.config-subpage.active');
-                    if (activeSubpage) {
-                        showMenu(); // 返回上一级
-                    } else {
-                        closeConfigCenter();
-                    }
+                    history.back();
                 }
                 if (modalOverlay.classList.contains('active')) closeModal();
                 if (sidebar.classList.contains('open')) { sidebar.classList.remove('open');
@@ -2279,15 +2753,20 @@
             }
         });
 
-        // ---------- 初始化 ----------
+        loadTheme();
         loadConfigs();
         loadAgents();
+        loadFolders();
+        loadKnowledge();
+        loadPlatforms();
         loadConversations();
 
         renderConversationList();
         renderAtDropdown();
         renderApiConfigList();
         renderAgentConfigList();
+        renderKnowledgeUI();
+        renderPlatformsList();
 
         if (configs.length === 0) showToast('⚠️ 请先添加API配置');
         if (agents.length === 0) showToast('⚠️ 请添加AI角色');
@@ -2300,12 +2779,18 @@
             saveCurrentConversation();
             saveAgents();
             saveConfigs();
+            saveFolders();
+            saveKnowledge();
+            savePlatforms();
         });
 
-        console.log('🤖 AI群聊 · 配置中心最终优化版');
+        console.log('🤖 AI群聊 · 群聊接力 + @勾选标记已启动');
         console.log('📂 配置:', configs.length, '个');
         console.log('👥 AI角色:', agents.length, '个');
         console.log('💬 对话:', conversations.length, '个');
+        console.log('📚 知识条目:', knowledge.length, '条');
+        console.log('📁 文件夹:', folders.length, '个');
+        console.log('🌐 外部平台:', platforms.length, '个');
 
         window.toggleGroupMode = toggleGroupMode;
 
